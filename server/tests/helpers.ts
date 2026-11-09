@@ -10,14 +10,29 @@ import { resetDatabase } from '../src/db/reset.js';
 import { createService } from '../src/service.js';
 import { createHub } from '../src/sse.js';
 
-/** Builds a full app on its own pool for `databaseUrl`. The caller decides when to close it. */
-export function buildTestApp(databaseUrl: string) {
+/**
+ * Builds a full app on its own pool for `databaseUrl`. The caller decides when to close it.
+ * `demoMode` defaults to the DEMO_MODE of the test environment.
+ */
+export function buildTestApp(databaseUrl: string, { demoMode }: { demoMode?: boolean } = {}) {
   const config = loadConfig();
+  const demo = demoMode ?? config.DEMO_MODE;
   const logger = pino({ level: 'silent' });
   const db = createPool(databaseUrl, () => undefined);
-  const service = createService(db, { demoMode: config.DEMO_MODE });
-  const hub = createHub({ maxClients: 5, pingMs: config.SSE_PING_MS, loadSnapshot: service.getSnapshot, logger });
-  const app = createApp({ service, hub, logger, rateLimitPerMinute: config.RATE_LIMIT_PER_MINUTE });
+  const service = createService(db, { demoMode: demo });
+  const hub = createHub({
+    maxClients: 5,
+    pingMs: config.SSE_PING_MS,
+    loadSnapshot: service.getSnapshot,
+    logger,
+  });
+  const app = createApp({
+    service,
+    hub,
+    logger,
+    rateLimitPerMinute: config.RATE_LIMIT_PER_MINUTE,
+    demoMode: demo,
+  });
 
   async function close() {
     hub.stop();
@@ -28,9 +43,9 @@ export function buildTestApp(databaseUrl: string) {
 }
 
 /** Builds a full app against the test database and resets it before each test. */
-export function setupTestApp() {
+export function setupTestApp(options: { demoMode?: boolean } = {}) {
   const config = loadConfig();
-  const testApp = buildTestApp(config.DATABASE_URL);
+  const testApp = buildTestApp(config.DATABASE_URL, options);
 
   beforeEach(async () => {
     await resetDatabase(config.DATABASE_OWNER_URL!, config.APP_DB_PASSWORD!);
@@ -83,7 +98,8 @@ export async function openStream(app: http.RequestListener) {
       const deadline = Date.now() + 3_000;
       while (snapshots.length < count) {
         if (streamError) throw streamError;
-        if (Date.now() > deadline) throw new Error(`Expected ${count} snapshots, got ${snapshots.length}`);
+        if (Date.now() > deadline)
+          throw new Error(`Expected ${count} snapshots, got ${snapshots.length}`);
         await new Promise<void>((resolve) => {
           waiters.push(resolve);
           setTimeout(resolve, 100);

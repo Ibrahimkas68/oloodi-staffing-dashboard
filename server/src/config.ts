@@ -22,6 +22,9 @@ const schema = z.object({
   SSE_MAX_CLIENTS: z.coerce.number().int().positive().default(100),
   SSE_PING_MS: z.coerce.number().int().positive().default(15_000),
   RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(120),
+  // Reverse proxies in front of the app (0 = none, 1 = Caddy). Needed so the rate limit sees the
+  // real client address instead of the proxy's.
+  TRUST_PROXY: z.coerce.number().int().min(0).max(5).default(0),
 });
 
 export type Config = z.infer<typeof schema>;

@@ -12,6 +12,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@asteasolutions/zod-to-openapi": "^9.1.0",
     "@staffing/shared": "*",
     "express": "^5.3.0",
     "express-rate-limit": "^8.7.3",

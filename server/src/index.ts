@@ -43,6 +43,8 @@ const app = createApp({
   hub,
   logger,
   rateLimitPerMinute: config.RATE_LIMIT_PER_MINUTE,
+  demoMode: config.DEMO_MODE,
+  trustProxy: config.TRUST_PROXY,
   webDist: fileURLToPath(new URL('../../web/dist', import.meta.url)),
 });
 

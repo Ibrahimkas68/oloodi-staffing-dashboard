@@ -1,0 +1,42 @@
+# Production override: puts Caddy (automatic HTTPS) in front of the app.
+# Run from the repository root, always together with the base file:
+#   DOMAIN=staffing.example.com docker compose -f compose.yaml -f infra/docker/docker-compose.prod.yml up -d --build
+# (infra/scripts/deploy.sh does this for you.) Relative paths below are relative to the repository root.
+#
+# Differences from the local setup: the app port is not published (only Caddy is reachable from
+# outside), and the database port is not published either.
+# Set real passwords in .env before using this: the committed defaults are for local use only.
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    environment:
+      # Caddy treats this as a site address: a bare name gets automatic HTTPS.
+      SITE_ADDRESS: ${DOMAIN:?Set DOMAIN to the public host name, for example staffing.example.com}
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      # Certificates live here; losing this volume means requesting new ones.
+      - caddy_data:/data
+      - caddy_config:/config
+
+  app:
+    environment:
+      # One proxy (Caddy) in front: the rate limit must use the client address it forwards.
+      TRUST_PROXY: '1'
+    # Merging would add to the base 'ports' list, so clear it: Caddy reaches the app over the
+    # internal Compose network. Needs Docker Compose 2.24 or newer.
+    ports: !reset []
+
+  db:
+    ports: !reset []
+
+volumes:
+  caddy_data:
+  caddy_config:
