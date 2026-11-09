@@ -1,5 +1,9 @@
+import { ActivityTimeline } from '../components/ActivityTimeline.js';
 import { ConnectionBadge, OfflineBanner } from '../components/Connection.js';
+import { DemoPanel } from '../components/DemoPanel.js';
 import { KpiRow } from '../components/KpiRow.js';
+import { MetricsPanel } from '../components/MetricsPanel.js';
+import { ReadinessLine } from '../components/ReadinessLine.js';
 import { SideNav } from '../components/SideNav.js';
 import { ShiftHeader } from '../components/ShiftHeader.js';
 import { WorkerTable } from '../components/WorkerTable.js';
@@ -50,18 +54,37 @@ export function ManagerPage() {
           </div>
         </header>
 
-        <main className="flex flex-1 flex-col gap-[18px] rounded-panel bg-surface p-4 text-ink sm:p-6">
+        <div className="flex flex-1 flex-col gap-3 xl:flex-row">
+          <main className="flex min-w-0 flex-1 flex-col gap-[18px] rounded-panel bg-surface p-4 text-ink sm:p-6">
+            {snapshot && (
+              <>
+                <ReadinessLine snapshot={snapshot} />
+                <KpiRow counts={snapshot.counts} required={snapshot.shift.requiredWorkers} />
+                <div className="mt-1 flex flex-wrap items-center justify-between gap-4">
+                  <h2 id={WORKERS_HEADING_ID} className="m-0 text-lg font-semibold">
+                    Workers
+                  </h2>
+                  <Legend />
+                </div>
+                <WorkerTable snapshot={snapshot} headingId={WORKERS_HEADING_ID} />
+                {snapshot.demoMode && <DemoPanel snapshot={snapshot} />}
+              </>
+            )}
+          </main>
           {snapshot && (
-            <>
-              <KpiRow counts={snapshot.counts} required={snapshot.shift.requiredWorkers} />
-              <div className="mt-1 flex flex-wrap items-center justify-between gap-4">
-                <h2 id={WORKERS_HEADING_ID} className="m-0 text-lg font-semibold">Workers</h2>
-                <Legend />
+            <aside
+              aria-label="Activity and metrics"
+              className="flex shrink-0 flex-col gap-3 rounded-panel bg-surface p-5 text-ink sm:p-[22px] xl:w-[272px]"
+            >
+              <div className="flex items-baseline justify-between">
+                <h2 className="m-0 text-lg font-semibold">Activity</h2>
+                <span className="text-[13px] text-mid">Newest first</span>
               </div>
-              <WorkerTable snapshot={snapshot} headingId={WORKERS_HEADING_ID} />
-            </>
+              <ActivityTimeline events={snapshot.recentEvents} />
+              <MetricsPanel />
+            </aside>
           )}
-        </main>
+        </div>
       </div>
     </div>
   );

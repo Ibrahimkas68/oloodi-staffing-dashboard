@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import type { ActivityEvent, Snapshot } from '@staffing/shared';
-import { formatTime, initials } from '../lib/format.js';
+import { firstName, formatTime, initials } from '../lib/format.js';
 import { useAction } from '../lib/useAction.js';
 import { Button } from './Button.js';
+import { CopyLinkButton, ManualCopyField } from './CopyLinkButton.js';
 import { AttendanceChip, ParticipationPill } from './StatusBadges.js';
 
 type Column = { label: string; widthClass?: string; headClass: string };
@@ -19,7 +20,11 @@ const COLUMNS: Column[] = [
   { label: 'Responded', widthClass: 'w-[90px]', headClass: 'px-2' },
   { label: 'Checked in', widthClass: 'w-[84px]', headClass: 'px-2 whitespace-nowrap' },
   { label: 'Checked out', widthClass: 'w-[96px]', headClass: 'px-2 whitespace-nowrap' },
-  { label: 'Action', widthClass: 'w-[100px]', headClass: 'sticky right-0 z-10 bg-card-head pr-4 pl-1 text-right' },
+  {
+    label: 'Action',
+    widthClass: 'w-[128px]',
+    headClass: 'sticky right-0 z-10 bg-card-head pr-4 pl-1 text-right',
+  },
 ];
 
 const nameCellId = (assignmentId: number) => `worker-name-${assignmentId}`;
@@ -28,7 +33,10 @@ const nameCellId = (assignmentId: number) => `worker-name-${assignmentId}`;
  * "a" or "b" on the row changed by `event`, alternating per event so the CSS animation restarts
  * for every change (see `.worker-row` in index.css); undefined on the other rows.
  */
-function highlightFor(event: ActivityEvent | undefined, assignmentId: number): 'a' | 'b' | undefined {
+function highlightFor(
+  event: ActivityEvent | undefined,
+  assignmentId: number,
+): 'a' | 'b' | undefined {
   if (event?.assignmentId !== assignmentId) return undefined;
   return event.id % 2 === 0 ? 'a' : 'b';
 }
@@ -56,7 +64,8 @@ function Time({ iso }: { iso: string | null }) {
 function keepFocusOnRow(assignmentId: number) {
   const nameCell = document.getElementById(nameCellId(assignmentId));
   const active = document.activeElement;
-  const focusIsLost = !active || active === document.body || nameCell?.parentElement?.contains(active);
+  const focusIsLost =
+    !active || active === document.body || nameCell?.parentElement?.contains(active);
   if (focusIsLost) nameCell?.focus();
 }
 
@@ -69,6 +78,7 @@ export function WorkerTable({ snapshot, headingId }: { snapshot: Snapshot; headi
   const { run, isPending } = useAction();
   const latestEvent = snapshot.recentEvents[0];
   // The event that was already latest when the table appeared is old news: do not highlight it.
+  const [manualLink, setManualLink] = useState<string | null>(null);
   const [eventSeenOnMount] = useState(() => latestEvent?.id);
   const highlightEvent = latestEvent?.id === eventSeenOnMount ? undefined : latestEvent;
 
@@ -79,85 +89,95 @@ export function WorkerTable({ snapshot, headingId }: { snapshot: Snapshot; headi
   }
 
   return (
-    <div
-      role="region"
-      tabIndex={0}
-      aria-labelledby={headingId}
-      className="overflow-x-auto rounded-card border border-line bg-card focus-visible:outline-2 focus-visible:outline-ink"
-    >
-      <table className="w-full min-w-[852px] table-fixed sm:min-w-[912px] text-left">
-        <colgroup>
-          {COLUMNS.map((column) => (
-            <col key={column.label} className={column.widthClass} />
-          ))}
-        </colgroup>
-        <thead>
-          <tr className="h-[42px] border-b border-surface-sunk bg-card-head text-[13px] font-medium text-mid">
+    <div className="flex flex-col gap-3">
+      <div
+        role="region"
+        tabIndex={0}
+        aria-labelledby={headingId}
+        className="overflow-x-auto rounded-card border border-line bg-card focus-visible:outline-2 focus-visible:outline-ink"
+      >
+        <table className="w-full min-w-[880px] table-fixed sm:min-w-[940px] text-left">
+          <colgroup>
             {COLUMNS.map((column) => (
-              <th key={column.label} scope="col" className={`font-medium ${column.headClass}`}>
-                {column.label}
-              </th>
+              <col key={column.label} className={column.widthClass} />
             ))}
-          </tr>
-        </thead>
-        <tbody>
-          {snapshot.assignments.map((a, index) => (
-            <tr
-              key={a.id}
-              data-testid={`worker-row-${a.id}`}
-              data-highlight={highlightFor(highlightEvent, a.id)}
-              className={`worker-row h-[74px] ${index > 0 ? 'border-t border-line-soft' : ''}`}
-            >
-              <td
-                id={nameCellId(a.id)}
-                tabIndex={-1}
-                className="sticky left-0 z-10 bg-card pr-2 pl-3.5 outline-ink focus-visible:outline-2 focus-visible:-outline-offset-2"
-              >
-                <div className="flex min-w-0 items-center gap-2.5">
-                  <span
-                    aria-hidden="true"
-                    className="hidden size-[34px] shrink-0 sm:inline-flex items-center justify-center rounded-pill bg-avatar text-sm font-semibold"
-                  >
-                    {initials(a.worker.fullName)}
-                  </span>
-                  <span className="truncate text-[17px] font-semibold">{a.worker.fullName}</span>
-                </div>
-              </td>
-              <td className="px-2.5">
-                <ParticipationPill value={a.participation} />
-              </td>
-              <td className="px-2.5">
-                <AttendanceChip value={a.attendance} />
-              </td>
-              <td className="px-2 text-base">
-                <Time iso={a.invitedAt} />
-              </td>
-              <td className="px-2 text-base">
-                <Time iso={a.respondedAt} />
-              </td>
-              <td className="px-2 text-base">
-                <Time iso={a.checkedInAt} />
-              </td>
-              <td className="px-2 text-base">
-                <Time iso={a.checkedOutAt} />
-              </td>
-              <td className="sticky right-0 z-10 bg-card pr-3.5 pl-1 text-right">
-                {a.participation === 'uninvited' && (
-                  <Button
-                    variant="invite"
-                    loading={isPending(a.id, 'invite')}
-                    busyLabel="Inviting…"
-                    onClick={() => void invite(a.id)}
-                    aria-label={`Invite ${a.worker.fullName}`}
-                  >
-                    Invite
-                  </Button>
-                )}
-              </td>
+          </colgroup>
+          <thead>
+            <tr className="h-[42px] border-b border-surface-sunk bg-card-head text-[13px] font-medium text-mid">
+              {COLUMNS.map((column) => (
+                <th key={column.label} scope="col" className={`font-medium ${column.headClass}`}>
+                  {column.label}
+                </th>
+              ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {snapshot.assignments.map((a, index) => (
+              <tr
+                key={a.id}
+                data-testid={`worker-row-${a.id}`}
+                data-highlight={highlightFor(highlightEvent, a.id)}
+                className={`worker-row h-[74px] ${index > 0 ? 'border-t border-line-soft' : ''}`}
+              >
+                <td
+                  id={nameCellId(a.id)}
+                  tabIndex={-1}
+                  className="sticky left-0 z-10 bg-card pr-2 pl-3.5 outline-ink focus-visible:outline-2 focus-visible:-outline-offset-2"
+                >
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <span
+                      aria-hidden="true"
+                      className="hidden size-[34px] shrink-0 sm:inline-flex items-center justify-center rounded-pill bg-avatar text-sm font-semibold"
+                    >
+                      {initials(a.worker.fullName)}
+                    </span>
+                    <span className="truncate text-[17px] font-semibold">{a.worker.fullName}</span>
+                  </div>
+                </td>
+                <td className="px-2.5">
+                  <ParticipationPill value={a.participation} />
+                </td>
+                <td className="px-2.5">
+                  <AttendanceChip value={a.attendance} />
+                </td>
+                <td className="px-2 text-base">
+                  <Time iso={a.invitedAt} />
+                </td>
+                <td className="px-2 text-base">
+                  <Time iso={a.respondedAt} />
+                </td>
+                <td className="px-2 text-base">
+                  <Time iso={a.checkedInAt} />
+                </td>
+                <td className="px-2 text-base">
+                  <Time iso={a.checkedOutAt} />
+                </td>
+                <td className="sticky right-0 z-10 bg-card pr-3.5 pl-1">
+                  <div className="flex items-center justify-end gap-1.5">
+                    {a.participation === 'uninvited' && (
+                      <Button
+                        variant="invite"
+                        loading={isPending(a.id, 'invite')}
+                        busyLabel="Inviting…"
+                        onClick={() => void invite(a.id)}
+                        aria-label={`Invite ${a.worker.fullName}`}
+                      >
+                        Invite
+                      </Button>
+                    )}
+                    <CopyLinkButton
+                      workerId={a.worker.id}
+                      workerName={firstName(a.worker.fullName)}
+                      onManualCopy={setManualLink}
+                    />
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {manualLink && <ManualCopyField link={manualLink} onClose={() => setManualLink(null)} />}
     </div>
   );
 }

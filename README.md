@@ -37,17 +37,16 @@ Configuration, ports, the image, the e2e container and troubleshooting are in
 
 ### Running from source
 
-For work on the code you need Node 22 and the database container:
+For work on the code you need Node 22 and Docker (for the database):
 
 ```bash
-cp .env.example .env
-docker compose up -d db
 npm ci
-npm run build -w @staffing/web
-npm run start -w @staffing/server     # http://localhost:3000
+npm run dev
 ```
 
-`npm run dev` (hot reload) is not available yet: its script is a pending task (T078).
+`npm run dev` creates `.env` from `.env.example` if it is missing, starts the database, and runs the
+server (<http://localhost:3000>) and the web app with hot reload (<http://localhost:5173>, the
+address to open while developing). Press Ctrl+C to stop both; the database keeps running.
 
 ## Reset
 
@@ -68,9 +67,13 @@ This drops and recreates the schema and loads the seed again, so the shift start
 4. Press a button twice quickly: the second request is a harmless repeat (`200`, `changed: false`).
 5. Stop the network for the worker window (browser dev tools, offline). The badge changes to
    offline. Go back online: it recovers by itself and shows the current state.
-
-Demo controls (a burst of identical actions, a simulated outage) are planned for US6 and do not
-exist yet. The outage case can be shown with the browser's offline mode, as in step 5.
+6. With `DEMO_MODE=true` in `.env`, a dashed DEMO MODE panel appears on the manager page. "Spam
+   check-in x10" sends ten identical check-ins at once: exactly one changes the state and one event is
+   recorded. "Simulate 5s outage" closes every live connection for five seconds, and both views
+   recover by themselves. The same calls are `POST /api/demo/burst` and `POST /api/demo/outage`.
+7. Also on the manager page: a readiness sentence ("2 of 3 places filled, starts in 1h 59min, ..."),
+   an activity timeline from the event log, a collapsible metrics card (client-side estimates of the
+   last update delay and recovery time), and a copy-link icon per worker row.
 
 ## Architecture and design
 
@@ -133,17 +136,19 @@ full snapshot, so there is no missed-event logic.
 All paths are under `/api`, JSON only, and every response carries `Cache-Control: no-store` and an
 `X-Request-Id`. Full contract: [rest-api.md](specs/001-live-staffing-dashboard/contracts/rest-api.md).
 
-| Method | Path                             | Who     | Result                                    |
-| ------ | -------------------------------- | ------- | ----------------------------------------- |
-| GET    | `/api/state`                     | both    | current snapshot                          |
-| GET    | `/api/events`                    | both    | SSE stream; `503` at the client cap       |
-| POST   | `/api/assignments/:id/invite`    | manager | `200 {changed, snapshot}`                 |
-| POST   | `/api/assignments/:id/accept`    | worker  | same; `409 SHIFT_FULL` when full          |
-| POST   | `/api/assignments/:id/decline`   | worker  | same                                      |
-| POST   | `/api/assignments/:id/cancel`    | worker  | same                                      |
-| POST   | `/api/assignments/:id/check-in`  | worker  | same                                      |
-| POST   | `/api/assignments/:id/check-out` | worker  | same                                      |
-| GET    | `/api/health`                    | ops     | `200` ok, `503` when the database is down |
+| Method | Path                                  | Who     | Result                                           |
+| ------ | ------------------------------------- | ------- | ------------------------------------------------ |
+| GET    | `/api/state`                          | both    | current snapshot                                 |
+| GET    | `/api/events`                         | both    | SSE stream; `503` at the client cap              |
+| POST   | `/api/assignments/:id/invite`         | manager | `200 {changed, snapshot}`                        |
+| POST   | `/api/assignments/:id/accept`         | worker  | same; `409 SHIFT_FULL` when full                 |
+| POST   | `/api/assignments/:id/decline`        | worker  | same                                             |
+| POST   | `/api/assignments/:id/cancel`         | worker  | same                                             |
+| POST   | `/api/assignments/:id/check-in`       | worker  | same                                             |
+| POST   | `/api/assignments/:id/check-out`      | worker  | same                                             |
+| GET    | `/api/health`                         | ops     | `200` ok, `503` when the database is down        |
+| GET    | `/api/openapi.json`, `/api/docs`      | anyone  | OpenAPI 3.1 document and a plain page listing it |
+| POST   | `/api/demo/burst`, `/api/demo/outage` | demo    | only when `DEMO_MODE=true`, else `404`           |
 
 Errors always have the shape `{"error":{"code","message","current"},"requestId"}`:
 
@@ -156,7 +161,7 @@ Errors always have the shape `{"error":{"code","message","current"},"requestId"}
 | `RATE_LIMITED`       | 429  | too many requests from one client                                    |
 | `INTERNAL`           | 500  | unexpected; no stack trace in the response, details only in the logs |
 
-There is no OpenAPI file yet (optional task T083).
+The OpenAPI document is generated from the same zod schemas the server validates with.
 
 ## Technology choices
 
@@ -239,13 +244,14 @@ Limitations, on purpose or for lack of time:
   presses again.
 - **One shift, three workers.** The data model allows more; the UI and the measurements do not.
 - **A declined worker is final** (assumption A1). The brief defines no way back.
-- **No production deployment yet.** The HTTPS proxy and the server scripts (T079) are not done; the
-  Compose stack is meant for local use and review.
-- **Optional extras not built:** demo endpoints and buttons, an OpenAPI file, an activity timeline.
+- **Deployment scripts are untested.** Caddy with automatic HTTPS, a server setup script and a deploy
+  script are in `infra/` (see [infra/README.md](infra/README.md)), but they were never run on a real
+  server. The Compose stack is what was tested.
+- **Demo extras are client-side or simulated.** The metrics card shows estimates measured in the
+  browser, not server timings, and the outage is a server-side simulation.
 
-Improvements, in the order I would take them: authentication and roles, HTTPS reverse proxy and a
-deployment script, `LISTEN/NOTIFY` for several instances, an OpenAPI file served at `/api/docs`, an
-activity timeline from the events table, and measurements on a real network.
+Improvements, in the order I would take them: authentication and roles, trying the deployment
+scripts on a real server, `LISTEN/NOTIFY` for several instances, and measurements on a real network.
 
 ## AI usage
 

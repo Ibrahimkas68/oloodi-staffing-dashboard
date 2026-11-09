@@ -269,3 +269,24 @@ covers it.
   hides all connection chrome.
 - **Verified:** typecheck, lint, tests (47 web), build. Browser at 390, 768, 820 and 1440 px: picker,
   worker screen, offline banner, notice appearing on an outside invite and clearing on own Accept.
+
+### 2026-11-09 · Polish and extras (T068 to T083) · agents + Claude
+- **Asked:** the remaining tasks: dev script (T078), server setup, deploy and Caddy (T079), security check
+  (T081), OpenAPI (T083), and the US6 extras (demo endpoints and panel, timeline, readiness line,
+  copy-link, metrics).
+- **Done by agents:** T079, T083, the US6 server routes and the US6 web components, each by a
+  code-architect agent, then a separate reviewer agent on T078, T079 and T083.
+- **Corrected after review:** the rate limiter would have seen only Caddy's address behind the proxy
+  (added `TRUST_PROXY`, set to 1 in the production file); the deploy timeout counted loop passes instead
+  of seconds; `DOMAIN` read from `.env` kept quotes; the firewall step assumed SSH on port 22; an old
+  Docker Compose would fail on the production file; Ctrl+C in `dev.sh` looked like a failure. My own
+  slip: a first edit put `TRUST_PROXY` under the wrong service in the production Compose file and made
+  it invalid; caught by `docker compose config` and fixed.
+- **Left as is:** the OpenAPI id schema says "integer above 0" while the validator also rejects leading
+  zeros and ids above 2147483647. The "Shift complete" rule follows the task text literally, so one
+  accepted worker who checked out reads "Shift complete" even with places open.
+- **Verified:** typecheck, lint, 87 web, 104 server, 52 shared and 16 e2e-tool tests, and the two
+  Playwright tests, all pass. `dev.sh` was run and probed. The demo panel and the 390 px layout were
+  checked in a browser by the web agent. Not verified: `server-init.sh`, `deploy.sh` and Caddy on a real
+  server, and a successful `execCommand('copy')` over plain http.
+

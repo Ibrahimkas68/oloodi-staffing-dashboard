@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import { snapshotSchema, type Snapshot } from '@staffing/shared';
+import { updateDelayMs } from './metrics.js';
 
 export type LiveStatus = 'connecting' | 'live' | 'reconnecting' | 'offline';
 
@@ -10,6 +11,12 @@ export type LiveState = {
   lastSyncedAt: number | null;
   /** Time spent reconnecting before the last successful catch-up, for the metrics panel. */
   lastRecoveryMs: number | null;
+  /**
+   * Client-side estimate of how long the newest change took to arrive (see `updateDelayMs`). Only
+   * set by snapshots that arrive while running, not by the first load or a catch-up after a
+   * reconnect, whose newest event may be old.
+   */
+  lastUpdateDelayMs: number | null;
   /**
    * Version of the newest snapshot that came from another session: it arrived on the stream while
    * this tab had no request of its own in flight. The worker view uses it to say "Updated from
@@ -30,7 +37,11 @@ const OFFLINE_AFTER_ERRORS = 3;
  * we hold, so a reset is picked up without a reload, while an older snapshot that raced a commit
  * is still ignored.
  */
-export function shouldApply(current: Snapshot | null, incoming: Snapshot, firstOfConnection = false): boolean {
+export function shouldApply(
+  current: Snapshot | null,
+  incoming: Snapshot,
+  firstOfConnection = false,
+): boolean {
   if (current === null || incoming.version > current.version) return true;
   return firstOfConnection && incoming.serverTime >= current.serverTime;
 }
@@ -40,7 +51,14 @@ export function backoffDelay(attempt: number): number {
   return Math.min(1_000 * 2 ** attempt, 10_000);
 }
 
-let state: LiveState = { status: 'connecting', snapshot: null, lastSyncedAt: null, lastRecoveryMs: null, remoteVersion: null };
+let state: LiveState = {
+  status: 'connecting',
+  snapshot: null,
+  lastSyncedAt: null,
+  lastRecoveryMs: null,
+  lastUpdateDelayMs: null,
+  remoteVersion: null,
+};
 const listeners = new Set<() => void>();
 
 function setState(patch: Partial<LiveState>) {
@@ -71,7 +89,14 @@ export async function trackLocalRequest<T>(request: Promise<T>): Promise<T> {
 
 function commit(incoming: Snapshot, firstOfConnection: boolean, fromAnotherSession: boolean): void {
   if (!shouldApply(state.snapshot, incoming, firstOfConnection)) return;
-  setState({ snapshot: incoming, remoteVersion: fromAnotherSession ? incoming.version : state.remoteVersion });
+  const measured = state.snapshot !== null && !firstOfConnection;
+  setState({
+    snapshot: incoming,
+    remoteVersion: fromAnotherSession ? incoming.version : state.remoteVersion,
+    lastUpdateDelayMs: measured
+      ? (updateDelayMs(incoming, Date.now()) ?? state.lastUpdateDelayMs)
+      : state.lastUpdateDelayMs,
+  });
 }
 
 /** Applies a snapshot from the stream, through the version guard. */
