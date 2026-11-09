@@ -1,4 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
+import { E2E_PORT, START_APP, e2eTarget, serverEnvironment } from './env.js';
+
+const SERVER_START_TIMEOUT_MS = 120_000;
+
+const target = e2eTarget();
 
 export default defineConfig({
   testDir: './tests',
@@ -8,8 +13,24 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [['html', { open: 'never' }], ['list']] : 'list',
   use: {
-    baseURL: process.env.BASE_URL ?? 'http://localhost:3000',
+    // Local mode: the server this config starts. External mode: the app in the e2e container.
+    // Either way env.ts has checked that the database that gets reset belongs to this target.
+    baseURL: target.baseUrl,
     trace: 'retain-on-failure',
   },
+  // External mode: the app is already running, so there is nothing to start.
+  webServer:
+    target.mode === 'external'
+      ? undefined
+      : {
+          command: START_APP,
+          // Relative to this config file: run from the repository root.
+          cwd: '..',
+          url: `http://localhost:${E2E_PORT}/api/health`,
+          // A server that is already running would be using another database.
+          reuseExistingServer: false,
+          timeout: SERVER_START_TIMEOUT_MS,
+          env: serverEnvironment(),
+        },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
 });

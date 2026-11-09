@@ -5,12 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch --conditions=source src/index.ts",
-    "build": "tsc -p tsconfig.json --noEmit",
+    "build": "tsc -p tsconfig.build.json",
     "start": "node --conditions=source --import tsx src/index.ts",
+    "start:prod": "node dist/index.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run"
   },
   "dependencies": {
+    "@asteasolutions/zod-to-openapi": "^9.1.0",
     "@staffing/shared": "*",
     "express": "^5.3.0",
     "express-rate-limit": "^8.7.3",

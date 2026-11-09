@@ -1,0 +1,25 @@
+# Build context is the repository root. Keep it small and keep secrets out of every image.
+
+# Installed or generated inside the image, never copied from the host (host binaries differ).
+**/node_modules
+**/dist
+**/test-results
+**/playwright-report
+**/measure-results
+**/coverage
+**/*.tsbuildinfo
+
+# Secrets: config.ts loads <root>/.env when it exists, so it must never reach an image.
+**/.env
+**/.env.*
+
+# Not needed to build or run the app.
+.git
+.claude
+.specify
+specs
+docs
+graphify-out
+AI_LOG.md
+README.md
+**/.DS_Store

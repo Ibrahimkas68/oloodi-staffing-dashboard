@@ -1,6 +1,11 @@
 # Quickstart: run and validate
 
-Target commands; they exist once the implementation tasks are done.
+Some commands below are targets. `npm run dev` (T078) does not exist yet. Until then, run the app like this
+(the database container must be up, for example `docker compose up -d db`):
+
+```bash
+npm run build -w @staffing/web && npm run start -w @staffing/server   # http://localhost:3000
+```
 
 ## Prerequisites
 
@@ -12,6 +17,8 @@ Target commands; they exist once the implementation tasks are done.
 ```bash
 docker compose up --build        # db + app, http://localhost:3000 (root compose.yaml includes infra/docker/docker-compose.yml)
 npm run db:reset                 # back to the seed state (infra/scripts/reset-db.sh)
+npm run e2e:docker               # e2e tests in containers, throwaway database (infra/docker/docker-compose.e2e.yml)
+npm run measure:docker           # the measurement in containers (container numbers, see docs/measurements.md)
 npm run dev                      # development: db in Docker, server and web with hot reload (infra/scripts/dev.sh)
 ```
 
@@ -26,7 +33,7 @@ All infrastructure files (Docker, Caddy, shell scripts, deployment guide) are in
 ```bash
 npm test          # unit (transition table, counts) + API, concurrency, constraints on real Postgres
 npm run e2e       # Playwright: two sessions, live sync, refresh, outage recovery
-npm run measure   # 20 runs each: update delay and recovery time, median and max
+npm run measure   # 20 measured runs each: update delay and recovery time, median and max, raw samples in e2e/measure-results/
 ```
 
 ## Manual validation scenarios
@@ -38,7 +45,7 @@ npm run measure   # 20 runs each: update delay and recovery time, median and max
 | 3 | Amina accepts, checks in, checks out | Dashboard updates live each time; Filled stays 1 after check-out; times recorded | US2, US3 |
 | 4 | Invite Youssef, he declines | Declined, no further actions; manager has no Invite for him | US2, A1 |
 | 5 | Invite Salma, accept, cancel, accept again | Filled 1 → 2 → 1 → 2 | US2 |
-| 6 | Double click Check in quickly | One check-in time; second response "already checked in" | US4 |
+| 6 | Double click Check in quickly | One check-in time. The UI sends one request, because the button is blocked while the first is pending; the "already checked in" answer of a second request is visible with `curl` or from two tabs | US4 |
 | 7 | `curl -X POST .../check-in` twice for the same id | `changed:true` then `changed:false`, same `checkedInAt` | US4 |
 | 8 | Check in after check-out | 409 with current state, clear message | US3, US4 |
 | 9 | Ids `abc`, `-1`, `999999` | 400, 400, 404; never 500 | US4 |

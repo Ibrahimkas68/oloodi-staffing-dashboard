@@ -12,13 +12,25 @@ const logger = pino({ level: config.LOG_LEVEL });
 
 // First start in Docker: create schema, roles and seed if the database is empty.
 if (config.DATABASE_OWNER_URL && config.APP_DB_PASSWORD) {
-  if (await isDatabaseEmpty(config.DATABASE_OWNER_URL)) {
-    await resetDatabase(config.DATABASE_OWNER_URL, config.APP_DB_PASSWORD);
-    logger.info('empty database: schema, roles and seed applied');
+  try {
+    if (await isDatabaseEmpty(config.DATABASE_OWNER_URL)) {
+      await resetDatabase(config.DATABASE_OWNER_URL, config.APP_DB_PASSWORD);
+      logger.info('empty database: schema, roles and seed applied');
+    }
+  } catch (error) {
+    // One readable line instead of a stack trace: this is almost always a setup problem.
+    const reason = error instanceof Error ? error.message : String(error);
+    logger.fatal(
+      `cannot prepare the database as the owner role: ${reason}. ` +
+        'If this is a reused Docker volume with different passwords, run `docker compose down -v`.',
+    );
+    process.exit(1);
   }
 }
 
-const db = createPool(config.DATABASE_URL);
+const db = createPool(config.DATABASE_URL, (error) =>
+  logger.error({ err: error }, 'database pool error on an idle connection'),
+);
 const service = createService(db, { demoMode: config.DEMO_MODE });
 const hub = createHub({
   maxClients: config.SSE_MAX_CLIENTS,
@@ -31,6 +43,8 @@ const app = createApp({
   hub,
   logger,
   rateLimitPerMinute: config.RATE_LIMIT_PER_MINUTE,
+  demoMode: config.DEMO_MODE,
+  trustProxy: config.TRUST_PROXY,
   webDist: fileURLToPath(new URL('../../web/dist', import.meta.url)),
 });
 

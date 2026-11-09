@@ -1,22 +1,3 @@
-<!--
-Sync Impact Report
-- Version change: template (unversioned) → 1.0.0
-- Modified principles: all placeholders replaced (first ratification)
-  - [PRINCIPLE_1_NAME] → I. Simplicity First
-  - [PRINCIPLE_2_NAME] → II. The Database Enforces the Rules
-  - [PRINCIPLE_3_NAME] → III. Every Transition Is Tested
-  - [PRINCIPLE_4_NAME] → IV. The Server Is the Single Source of Truth
-  - [PRINCIPLE_5_NAME] → V. Safe Repeats
-  - Added: VI. Honest Feedback
-  - Added: VII. Owned AI-Assisted Work
-- Added sections: Technology and Security Constraints; Development Workflow and Quality Gates
-- Removed sections: none
-- Templates checked: plan-template.md (Constitution Check reads this file at runtime, no edit needed);
-  spec-template.md, tasks-template.md (no principle-specific references, no edit needed)
-- Deferred TODOs: none
-Remove this comment before committing.
--->
-
 # Live Staffing Dashboard Constitution
 
 ## Core Principles
@@ -55,7 +36,9 @@ Rationale: correctness of status transitions is the core of the exercise and mus
 ### IV. The Server Is the Single Source of Truth
 
 - Clients MUST receive a full snapshot on every (re)connect and after every committed change.
-- Clients MUST apply a snapshot only when its version is newer than the one they hold.
+- Clients MUST apply a snapshot only when its version is newer than the one they hold. The one
+  exception is the first snapshot of a new connection after a database reset, accepted only when it
+  was built no earlier than the held snapshot (see contracts/live-updates.md).
 - Clients MUST NOT store actions locally or queue them for later replay.
 
 Rationale: a full versioned snapshot removes missed-event bugs and makes catch-up after an outage
@@ -120,4 +103,7 @@ Rationale: the brief evaluates ownership of AI-assisted work.
   PATCH for wording fixes.
 - Any violation that is kept MUST be justified in the plan's Complexity Tracking table.
 
-**Version**: 1.0.0 | **Ratified**: 2026-11-08 | **Last Amended**: 2026-11-08
+**Version**: 1.0.1 | **Ratified**: 2026-11-08 | **Last Amended**: 2026-11-09
+
+Amendments:
+- 1.0.1 (2026-11-09): Principle IV clarifies the reset exception to the version rule.

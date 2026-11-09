@@ -1,6 +1,6 @@
 import type { Action, Actor, AssignmentState } from './types.js';
 
-/** Timestamp columns an action sets to the commit time. */
+/** Timestamp columns an action sets to the time of the write. */
 export type Stamp = 'invited_at' | 'responded_at' | 'cancelled_at' | 'checked_in_at' | 'checked_out_at';
 
 type Rule = {

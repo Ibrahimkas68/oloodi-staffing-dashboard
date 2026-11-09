@@ -1,20 +1,8 @@
 import { Router } from 'express';
-import { ACTION_PATHS, type Action } from '@staffing/shared';
-import { z } from 'zod';
 import { DomainError } from '../errors.js';
+import { actionByPath, idSchema } from './params.js';
 import type { StaffingService } from '../service.js';
 import type { LiveHub } from '../sse.js';
-
-// Positive integer that fits a Postgres integer. Rejects "abc", "-1", "1.5", " 1", "1; DROP ...".
-const idSchema = z
-  .string()
-  .regex(/^[1-9]\d{0,9}$/)
-  .transform(Number)
-  .refine((n) => n <= 2_147_483_647);
-
-const actionByPath = new Map<string, Action>(
-  (Object.entries(ACTION_PATHS) as [Action, string][]).map(([action, path]) => [path, action]),
-);
 
 export function assignmentRoutes(service: StaffingService, hub: LiveHub): Router {
   const router = Router();

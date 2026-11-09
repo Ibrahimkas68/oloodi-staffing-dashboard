@@ -40,7 +40,7 @@ Spec entities: Shift, Worker, Assignment, Activity event (spec "Key Entities").
 | updated_at | timestamptz | internal, not sent to clients |
 
 Note on `responded_at`: set on Accept, Decline and Cancel. A repeat of the same action never changes
-it (the conditional update does not match). Accept again after Cancel sets a new `responded_at`,
+it (the transition table sees the target state and nothing is written). Accept again after Cancel sets a new `responded_at`,
 which is a real new response, not a repeat.
 
 ### events (append-only)
@@ -53,7 +53,7 @@ which is a real new response, not a repeat.
 | action | text | `invite`, `accept`, `decline`, `cancel`, `check_in`, `check_out` |
 | actor | text | `manager` or `worker` |
 | version | bigint | shift version after this action |
-| at | timestamptz | default now() |
+| at | timestamptz | set by the app with `clock_timestamp()` (the moment of the write); the column default is only a fallback |
 
 ## Constraints (database refuses impossible rows)
 
@@ -88,15 +88,25 @@ target for the `changed:false` rule.
 ## Transaction per action
 
 1. `BEGIN`
-2. `SELECT ... FROM shifts WHERE id = $1 FOR UPDATE`
-3. For accept, only if this assignment is not already accepted (a repeat must still return
-   `changed:false`): count accepted assignments; if `>= required_workers` → `409 SHIFT_FULL`
-4. `UPDATE assignments SET ... WHERE id = $1 AND <allowed when> RETURNING *`
-5. 0 rows → decision rule (research R4): not found → 404; already in target → `200 changed:false`;
-   else `409 INVALID_TRANSITION` with current state. `ROLLBACK`.
-6. `UPDATE shifts SET version = version + 1 RETURNING version`
-7. `INSERT INTO events (...)` with that version
-8. `COMMIT`, build snapshot, broadcast
+2. Find the assignment's shift; no such assignment gives `404 NOT_FOUND`
+3. `SELECT ... FROM shifts WHERE id = $1 FOR UPDATE` (every change to the shift runs one at a time)
+4. Read the assignment state, then let the shared transition table decide (research R4): already in
+   the target state gives `200 changed:false` and nothing is written; not allowed gives
+   `409 INVALID_TRANSITION` with the current state.
+5. For accept: count accepted assignments; if `>= required_workers` then `409 SHIFT_FULL`
+6. Guarded `UPDATE assignments SET ... WHERE id = $1 AND participation = <read> AND attendance = <read>`.
+   Zero rows is a fallback that cannot happen while the lock is held; it is reported as an internal error.
+7. `UPDATE shifts SET version = version + 1 RETURNING version` (each applied action bumps the version by
+   exactly one; refused and repeated actions do not)
+8. `INSERT INTO events (...)` with that version
+9. Read the snapshot (still inside the transaction, so it is consistent) and `COMMIT`
+10. After the commit, and only when something changed, broadcast that snapshot to every live client
+
+Stamps (`invited_at`, `responded_at`, `cancelled_at`, `checked_in_at`, `checked_out_at`), `updated_at`
+and `events.at` use `clock_timestamp()` (the moment of the write), not `now()` (the start of the
+transaction). A request can wait on the lock after its transaction began, and a transaction-start time
+could then be older than a time another request committed meanwhile, which would put a check-out before
+its check-in.
 
 ## Derived counts (never stored)
 

@@ -101,6 +101,8 @@ recorded, participation stays Accepted, Filled is unchanged, and no further acti
    cancelling is only allowed before check-in.
 5. **Given** a worker is not Accepted (Uninvited, Invited, Declined or Cancelled), **When** a check-in
    is attempted, **Then** it is refused with a clear reason and nothing changes.
+6. **Given** a worker is not Checked in (not yet checked in, or not Accepted), **When** a check-out is
+   attempted, **Then** it is refused with a clear reason and nothing changes.
 
 ---
 
@@ -243,7 +245,7 @@ the badge change from Live to Reconnecting to Live).
   | Check in | Worker | Accepted and Not started | Checked in (participation stays Accepted) |
   | Check out | Worker | Checked in | Checked out (final) |
 - **FR-006**: System MUST refuse any other action with a message that names the current state, and
-  MUST leave data unchanged.
+  MUST leave data unchanged. In particular, check-out is refused unless the worker is Checked in.
 - **FR-007**: System MUST refuse an Accept that would exceed the required number of workers, with a
   "shift full" message.
 - **FR-008**: System MUST record the time of invitation, response (accept, decline, cancel), check-in

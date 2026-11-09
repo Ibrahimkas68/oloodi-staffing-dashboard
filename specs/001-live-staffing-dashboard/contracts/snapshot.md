@@ -11,6 +11,7 @@ type Attendance = 'not_started' | 'checked_in' | 'checked_out';
 type Snapshot = {
   version: number;                 // shift version, increases with every commit
   serverTime: string;              // when this snapshot was built
+  demoMode: boolean;               // true when demo controls (burst, outage) are enabled (DEMO_MODE)
   shift: {
     id: number; title: string; location: string;
     startsAt: string; endsAt: string; requiredWorkers: number;
@@ -32,7 +33,7 @@ type Snapshot = {
   };
   recentEvents: Array<{            // newest first, last 20
     id: number; action: string; actor: 'manager' | 'worker';
-    workerName: string; at: string; version: number;
+    assignmentId: number; workerName: string; at: string; version: number;
   }>;
 };
 ```

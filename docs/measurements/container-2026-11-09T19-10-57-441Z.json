@@ -1,0 +1,517 @@
+{
+  "environment": {
+    "mode": "container",
+    "date": "2026-11-09T19:10:57.441Z",
+    "cpuModel": "unknown",
+    "cpuCores": 10,
+    "ramGiB": 7.8,
+    "os": "linux 7.2.12-orbstack-00394-gbecdd6130068 arm64",
+    "osProductVersion": null,
+    "hardwareModel": null,
+    "powerSource": null,
+    "node": "v26.13.0",
+    "chromium": "158.0.8127.18",
+    "playwright": "1.65.0",
+    "headless": true,
+    "gitCommit": "b876293",
+    "gitDirty": false,
+    "dockerInfo": "29.8.2 10 8392671232 OrbStack",
+    "config": {
+      "measuredRuns": 20,
+      "warmupRuns": 6,
+      "outageMs": 5000,
+      "settleMs": 250
+    }
+  },
+  "samples": {
+    "updateDelay": [
+      {
+        "index": 0,
+        "warmup": true,
+        "action": "cancel",
+        "failed": false,
+        "ms": 9
+      },
+      {
+        "index": 1,
+        "warmup": true,
+        "action": "accept",
+        "failed": false,
+        "ms": 17
+      },
+      {
+        "index": 2,
+        "warmup": true,
+        "action": "cancel",
+        "failed": false,
+        "ms": 11
+      },
+      {
+        "index": 3,
+        "warmup": true,
+        "action": "accept",
+        "failed": false,
+        "ms": 19
+      },
+      {
+        "index": 4,
+        "warmup": true,
+        "action": "cancel",
+        "failed": false,
+        "ms": 16
+      },
+      {
+        "index": 5,
+        "warmup": true,
+        "action": "accept",
+        "failed": false,
+        "ms": 19
+      },
+      {
+        "index": 6,
+        "warmup": false,
+        "action": "cancel",
+        "failed": false,
+        "ms": 17
+      },
+      {
+        "index": 7,
+        "warmup": false,
+        "action": "accept",
+        "failed": false,
+        "ms": 18
+      },
+      {
+        "index": 8,
+        "warmup": false,
+        "action": "cancel",
+        "failed": false,
+        "ms": 11
+      },
+      {
+        "index": 9,
+        "warmup": false,
+        "action": "accept",
+        "failed": false,
+        "ms": 15
+      },
+      {
+        "index": 10,
+        "warmup": false,
+        "action": "cancel",
+        "failed": false,
+        "ms": 16
+      },
+      {
+        "index": 11,
+        "warmup": false,
+        "action": "accept",
+        "failed": false,
+        "ms": 18
+      },
+      {
+        "index": 12,
+        "warmup": false,
+        "action": "cancel",
+        "failed": false,
+        "ms": 17
+      },
+      {
+        "index": 13,
+        "warmup": false,
+        "action": "accept",
+        "failed": false,
+        "ms": 18
+      },
+      {
+        "index": 14,
+        "warmup": false,
+        "action": "cancel",
+        "failed": false,
+        "ms": 15
+      },
+      {
+        "index": 15,
+        "warmup": false,
+        "action": "accept",
+        "failed": false,
+        "ms": 6
+      },
+      {
+        "index": 16,
+        "warmup": false,
+        "action": "cancel",
+        "failed": false,
+        "ms": 17
+      },
+      {
+        "index": 17,
+        "warmup": false,
+        "action": "accept",
+        "failed": false,
+        "ms": 17
+      },
+      {
+        "index": 18,
+        "warmup": false,
+        "action": "cancel",
+        "failed": false,
+        "ms": 16
+      },
+      {
+        "index": 19,
+        "warmup": false,
+        "action": "accept",
+        "failed": false,
+        "ms": 15
+      },
+      {
+        "index": 20,
+        "warmup": false,
+        "action": "cancel",
+        "failed": false,
+        "ms": 17
+      },
+      {
+        "index": 21,
+        "warmup": false,
+        "action": "accept",
+        "failed": false,
+        "ms": 21
+      },
+      {
+        "index": 22,
+        "warmup": false,
+        "action": "cancel",
+        "failed": false,
+        "ms": 17
+      },
+      {
+        "index": 23,
+        "warmup": false,
+        "action": "accept",
+        "failed": false,
+        "ms": 19
+      },
+      {
+        "index": 24,
+        "warmup": false,
+        "action": "cancel",
+        "failed": false,
+        "ms": 14
+      },
+      {
+        "index": 25,
+        "warmup": false,
+        "action": "accept",
+        "failed": false,
+        "ms": 11
+      }
+    ],
+    "recovery": [
+      {
+        "index": 0,
+        "warmup": true,
+        "action": "cancel",
+        "failed": false,
+        "ms": 21,
+        "onlineEventMs": 5,
+        "path": "online-event"
+      },
+      {
+        "index": 1,
+        "warmup": true,
+        "action": "accept",
+        "failed": false,
+        "ms": 20,
+        "onlineEventMs": 4,
+        "path": "online-event"
+      },
+      {
+        "index": 2,
+        "warmup": true,
+        "action": "cancel",
+        "failed": false,
+        "ms": 15,
+        "onlineEventMs": 2,
+        "path": "online-event"
+      },
+      {
+        "index": 3,
+        "warmup": true,
+        "action": "accept",
+        "failed": false,
+        "ms": 21,
+        "onlineEventMs": 3,
+        "path": "online-event"
+      },
+      {
+        "index": 4,
+        "warmup": true,
+        "action": "cancel",
+        "failed": false,
+        "ms": 20,
+        "onlineEventMs": 5,
+        "path": "online-event"
+      },
+      {
+        "index": 5,
+        "warmup": true,
+        "action": "accept",
+        "failed": false,
+        "ms": 20,
+        "onlineEventMs": 4,
+        "path": "online-event"
+      },
+      {
+        "index": 6,
+        "warmup": false,
+        "action": "cancel",
+        "failed": false,
+        "ms": 24,
+        "onlineEventMs": 4,
+        "path": "online-event"
+      },
+      {
+        "index": 7,
+        "warmup": false,
+        "action": "accept",
+        "failed": false,
+        "ms": 17,
+        "onlineEventMs": 3,
+        "path": "online-event"
+      },
+      {
+        "index": 8,
+        "warmup": false,
+        "action": "cancel",
+        "failed": false,
+        "ms": 9,
+        "onlineEventMs": 2,
+        "path": "online-event"
+      },
+      {
+        "index": 9,
+        "warmup": false,
+        "action": "accept",
+        "failed": false,
+        "ms": 20,
+        "onlineEventMs": 3,
+        "path": "online-event"
+      },
+      {
+        "index": 10,
+        "warmup": false,
+        "action": "cancel",
+        "failed": false,
+        "ms": 19,
+        "onlineEventMs": 3,
+        "path": "online-event"
+      },
+      {
+        "index": 11,
+        "warmup": false,
+        "action": "accept",
+        "failed": false,
+        "ms": 18,
+        "onlineEventMs": 3,
+        "path": "online-event"
+      },
+      {
+        "index": 12,
+        "warmup": false,
+        "action": "cancel",
+        "failed": false,
+        "ms": 18,
+        "onlineEventMs": 3,
+        "path": "online-event"
+      },
+      {
+        "index": 13,
+        "warmup": false,
+        "action": "accept",
+        "failed": false,
+        "ms": 17,
+        "onlineEventMs": 3,
+        "path": "online-event"
+      },
+      {
+        "index": 14,
+        "warmup": false,
+        "action": "cancel",
+        "failed": false,
+        "ms": 19,
+        "onlineEventMs": 3,
+        "path": "online-event"
+      },
+      {
+        "index": 15,
+        "warmup": false,
+        "action": "accept",
+        "failed": false,
+        "ms": 20,
+        "onlineEventMs": 3,
+        "path": "online-event"
+      },
+      {
+        "index": 16,
+        "warmup": false,
+        "action": "cancel",
+        "failed": false,
+        "ms": 9,
+        "onlineEventMs": 1,
+        "path": "online-event"
+      },
+      {
+        "index": 17,
+        "warmup": false,
+        "action": "accept",
+        "failed": false,
+        "ms": 17,
+        "onlineEventMs": 3,
+        "path": "online-event"
+      },
+      {
+        "index": 18,
+        "warmup": false,
+        "action": "cancel",
+        "failed": false,
+        "ms": 19,
+        "onlineEventMs": 3,
+        "path": "online-event"
+      },
+      {
+        "index": 19,
+        "warmup": false,
+        "action": "accept",
+        "failed": false,
+        "ms": 19,
+        "onlineEventMs": 3,
+        "path": "online-event"
+      },
+      {
+        "index": 20,
+        "warmup": false,
+        "action": "cancel",
+        "failed": false,
+        "ms": 20,
+        "onlineEventMs": 4,
+        "path": "online-event"
+      },
+      {
+        "index": 21,
+        "warmup": false,
+        "action": "accept",
+        "failed": false,
+        "ms": 20,
+        "onlineEventMs": 3,
+        "path": "online-event"
+      },
+      {
+        "index": 22,
+        "warmup": false,
+        "action": "cancel",
+        "failed": false,
+        "ms": 19,
+        "onlineEventMs": 4,
+        "path": "online-event"
+      },
+      {
+        "index": 23,
+        "warmup": false,
+        "action": "accept",
+        "failed": false,
+        "ms": 20,
+        "onlineEventMs": 4,
+        "path": "online-event"
+      },
+      {
+        "index": 24,
+        "warmup": false,
+        "action": "cancel",
+        "failed": false,
+        "ms": 18,
+        "onlineEventMs": 3,
+        "path": "online-event"
+      },
+      {
+        "index": 25,
+        "warmup": false,
+        "action": "accept",
+        "failed": false,
+        "ms": 6,
+        "onlineEventMs": 1,
+        "path": "online-event"
+      }
+    ],
+    "aborted": null
+  },
+  "analysis": {
+    "updateDelay": {
+      "measuredRuns": 20,
+      "failedRuns": 0,
+      "stats": {
+        "count": 20,
+        "min": 6,
+        "median": 17,
+        "p95": 19,
+        "max": 21,
+        "mean": 15.75
+      },
+      "byAction": {
+        "cancel": {
+          "count": 10,
+          "min": 11,
+          "median": 16.5,
+          "p95": 17,
+          "max": 17,
+          "mean": 15.7
+        },
+        "accept": {
+          "count": 10,
+          "min": 6,
+          "median": 17.5,
+          "p95": 21,
+          "max": 21,
+          "mean": 15.8
+        }
+      }
+    },
+    "recovery": {
+      "measuredRuns": 20,
+      "failedRuns": 0,
+      "stats": {
+        "count": 20,
+        "min": 6,
+        "median": 19,
+        "p95": 20,
+        "max": 24,
+        "mean": 17.4
+      },
+      "byAction": {
+        "cancel": {
+          "count": 10,
+          "min": 9,
+          "median": 19,
+          "p95": 24,
+          "max": 24,
+          "mean": 17.4
+        },
+        "accept": {
+          "count": 10,
+          "min": 6,
+          "median": 18.5,
+          "p95": 20,
+          "max": 20,
+          "mean": 17.4
+        }
+      }
+    },
+    "recoveryPaths": {
+      "onlineEvent": 20,
+      "noOnlineEvent": 0
+    },
+    "sc005Met": true,
+    "sc006Met": true
+  }
+}

@@ -1,0 +1,23 @@
+# Reverse proxy with automatic HTTPS (Let's Encrypt) in front of the app.
+# Used by infra/docker/docker-compose.prod.yml, which sets SITE_ADDRESS from the DOMAIN variable.
+# DOMAIN must be a public name whose DNS record points at this server, with ports 80 and 443 open.
+{$SITE_ADDRESS} {
+	encode zstd gzip
+
+	reverse_proxy app:3000 {
+		# Send each chunk to the browser as soon as it arrives. Without this, Caddy may buffer
+		# the live-update stream (/api/events, Server-Sent Events) and the dashboard stalls.
+		flush_interval -1
+
+		# Fail fast when the app is down instead of hanging the browser.
+		transport http {
+			dial_timeout 5s
+			response_header_timeout 30s
+		}
+	}
+
+	# No write timeout is set on purpose: a live-update connection stays open for a long time.
+	log {
+		output stdout
+	}
+}

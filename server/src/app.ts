@@ -7,6 +7,8 @@ import { pinoHttp } from 'pino-http';
 import type { Logger } from 'pino';
 import { DomainError, errorHandler, notFoundHandler, sendError } from './errors.js';
 import { assignmentRoutes } from './routes/assignments.js';
+import { demoRoutes } from './routes/demo.js';
+import { docsRoutes } from './routes/docs.js';
 import { healthRoutes } from './routes/health.js';
 import { stateRoutes } from './routes/state.js';
 import type { StaffingService } from './service.js';
@@ -17,6 +19,10 @@ type AppOptions = {
   hub: LiveHub;
   logger: Logger;
   rateLimitPerMinute: number;
+  /** Mounts the demo routes (burst, outage) and documents them. Off by default. */
+  demoMode?: boolean;
+  /** Number of reverse proxies in front of the app; 0 when it is reached directly. */
+  trustProxy?: number;
   /** Folder with the built web app, served in production. */
   webDist?: string;
 };
@@ -37,18 +43,41 @@ const noStore: RequestHandler = (_req, res, next) => {
   next();
 };
 
-export function createApp({ service, hub, logger, rateLimitPerMinute, webDist }: AppOptions) {
+export function createApp({ service, hub, logger, rateLimitPerMinute, demoMode = false, trustProxy = 0, webDist }: AppOptions) {
   const app = express();
+  app.set('trust proxy', trustProxy);
   app.disable('x-powered-by');
 
   // 1. request id, 2. logs
   app.use(requestId);
-  app.use(pinoHttp({ logger, genReqId: (_req, res) => String(res.locals.requestId) }));
+  app.use(
+    pinoHttp({
+      logger,
+      genReqId: (_req, res) => String(res.locals.requestId),
+      // The container health check calls this every 15 s; it would drown the real requests.
+      autoLogging: { ignore: (req) => req.url === '/api/health' },
+      // One short line per request instead of every request and response header.
+      serializers: {
+        req: (req: { id: unknown; method: string; url: string }) => ({ id: req.id, method: req.method, url: req.url }),
+        res: (res: { statusCode: number }) => ({ statusCode: res.statusCode }),
+      },
+    }),
+  );
   // 3. security headers
   app.use(
     helmet({
       contentSecurityPolicy: {
-        directives: { defaultSrc: ["'self'"], connectSrc: ["'self'"], imgSrc: ["'self'", 'data:'] },
+        directives: {
+          defaultSrc: ["'self'"],
+          connectSrc: ["'self'"],
+          imgSrc: ["'self'", 'data:'],
+          // helmet adds `upgrade-insecure-requests` by default. Opened over plain http at any
+          // address except localhost (a phone on the same wifi, a server without TLS), the browser
+          // then rewrites the page's own script and stylesheet to https, which has no listener
+          // here, and the page stays blank. Every resource is same-origin, so nothing needs
+          // upgrading; HTTPS, where wanted, is the reverse proxy's job.
+          upgradeInsecureRequests: null,
+        },
       },
     }),
   );
@@ -67,9 +96,11 @@ export function createApp({ service, hub, logger, rateLimitPerMinute, webDist }:
   app.use('/api', noStore);
 
   // 7. routes
+  app.use('/api', docsRoutes(demoMode));
   app.use('/api', healthRoutes(service));
   app.use('/api', stateRoutes(service, hub));
   app.use('/api', assignmentRoutes(service, hub));
+  if (demoMode) app.use('/api', demoRoutes(service, hub));
   app.use('/api', notFoundHandler);
 
   if (webDist && existsSync(webDist)) {

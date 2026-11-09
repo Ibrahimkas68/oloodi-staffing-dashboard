@@ -14,6 +14,9 @@ playwright-report/
 test-results/
 blob-report/
 
+# raw measurement runs (chosen ones are copied to docs/measurements/ by hand)
+e2e/measure-results/
+
 # local machine
 .DS_Store
 .claude/settings.local.json

@@ -159,13 +159,18 @@ export async function countAccepted(db: Queryable, shiftId: number): Promise<num
   return rows[0]?.filled ?? 0;
 }
 
+// Times come from clock_timestamp() (the moment of the write), not now() (the moment the
+// transaction started). A request can wait on the shift lock after its transaction began, so
+// now() could be older than a time another request committed meanwhile, and a check-out would
+// then be stamped before the check-in it follows. clock_timestamp() runs after the lock is held,
+// so stamps, updated_at and event times always follow the order in which changes were applied.
 // Fixed column list: stamp names come from the transition table, never from the request.
 const STAMP_SQL: Record<Stamp, string> = {
-  invited_at: 'invited_at = now()',
-  responded_at: 'responded_at = now()',
-  cancelled_at: 'cancelled_at = now()',
-  checked_in_at: 'checked_in_at = now()',
-  checked_out_at: 'checked_out_at = now()',
+  invited_at: 'invited_at = clock_timestamp()',
+  responded_at: 'responded_at = clock_timestamp()',
+  cancelled_at: 'cancelled_at = clock_timestamp()',
+  checked_in_at: 'checked_in_at = clock_timestamp()',
+  checked_out_at: 'checked_out_at = clock_timestamp()',
 };
 
 /**
@@ -179,7 +184,7 @@ export async function updateAssignment(
   to: AssignmentState,
   stamps: readonly Stamp[],
 ): Promise<boolean> {
-  const sets = ['participation = $2', 'attendance = $3', 'updated_at = now()', ...stamps.map((s) => STAMP_SQL[s])];
+  const sets = ['participation = $2', 'attendance = $3', 'updated_at = clock_timestamp()', ...stamps.map((s) => STAMP_SQL[s])];
   const { rowCount } = await db.query(
     `UPDATE assignments SET ${sets.join(', ')}
       WHERE id = $1 AND participation = $4 AND attendance = $5`,
@@ -201,7 +206,7 @@ export async function insertEvent(
   event: { shiftId: number; assignmentId: number; action: Action; actor: Actor; version: number },
 ): Promise<void> {
   await db.query(
-    'INSERT INTO events (shift_id, assignment_id, action, actor, version) VALUES ($1, $2, $3, $4, $5)',
+    'INSERT INTO events (shift_id, assignment_id, action, actor, version, at)\n     VALUES ($1, $2, $3, $4, $5, clock_timestamp())',
     [event.shiftId, event.assignmentId, event.action, event.actor, event.version],
   );
 }
