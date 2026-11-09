@@ -1,0 +1,39 @@
+# Contract: Live updates (Server-Sent Events)
+
+`GET /api/events`, `Content-Type: text/event-stream`, `Cache-Control: no-store`,
+`Connection: keep-alive`. In production behind a proxy, response buffering must be off.
+
+## Server behaviour
+
+1. Register the client in the hub (reject with `503` above the client cap).
+2. Send `retry: 2000`.
+3. Send `event: snapshot` with the current [Snapshot](snapshot.md). Registering before reading means
+   no commit can fall between the read and the subscription.
+4. After every committed action, send `event: snapshot` to every client.
+5. Every 15 s send `event: ping` with `data: {"serverTime": "<ISO>"}`. A named event, because SSE
+   comment lines are invisible to `EventSource`.
+6. On disconnect, remove the client. On shutdown, close all streams.
+
+## Events
+
+| Event | Data | When |
+|---|---|---|
+| `snapshot` | Snapshot JSON | on connect, after every commit |
+| `ping` | `{ "serverTime": string }` | every 15 s |
+
+Ordering: snapshots carry `version`; versions increase strictly with commits (shift row lock).
+
+## Client behaviour
+
+- Status: `live` after the first snapshot; `reconnecting` on error while `EventSource` retries;
+  `offline` once the stream is closed for good or retries keep failing; show `lastSyncedAt`.
+- Version guard: apply a snapshot only if `version > current.version` (also for HTTP responses).
+- Watchdog: no `snapshot` or `ping` for 35 s → close and reconnect.
+- Closed stream (error status such as 503): reconnect manually with backoff 1 s, 2 s, 4 s, max 10 s.
+- Catch-up: the first event of every connection is a full snapshot; no replay of missed events.
+
+## Known limits
+
+- No delivery guarantee; heartbeat and watchdog bound staleness to about 35 s in the worst case.
+- One process holds the hub; multiple instances would need PostgreSQL `LISTEN/NOTIFY`.
+- About 6 HTTP/1.1 connections per site per browser.

@@ -1,0 +1,19 @@
+# dependencies and builds
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# environment (only the example is committed)
+.env
+.env.*
+!.env.example
+
+# test output
+playwright-report/
+test-results/
+blob-report/
+
+# local machine
+.DS_Store
+.claude/settings.local.json

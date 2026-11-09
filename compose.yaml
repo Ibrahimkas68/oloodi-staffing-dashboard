@@ -1,0 +1,7 @@
+# All infrastructure lives in infra/. This file only lets you run `docker compose up --build`
+# from the repository root.
+name: staffing
+
+include:
+  - path: infra/docker/docker-compose.yml
+    project_directory: .

@@ -1,0 +1,43 @@
+# Included from the root compose.yaml with project_directory set to the repo root,
+# so every relative path below is relative to the repository root.
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-staffing}
+      POSTGRES_USER: ${POSTGRES_OWNER_USER:-staffing_owner}
+      POSTGRES_PASSWORD: ${POSTGRES_OWNER_PASSWORD:-staffing_owner_dev}
+    ports:
+      # Reachable from this machine only, never from the network.
+      - '127.0.0.1:${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+  app:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PORT: 3000
+      NODE_ENV: production
+      DEMO_MODE: ${DEMO_MODE:-false}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      SSE_MAX_CLIENTS: ${SSE_MAX_CLIENTS:-100}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:-staffing_app_dev}
+      # Inside the Compose network the database host is "db", not localhost.
+      DATABASE_URL: postgres://staffing_app:${APP_DB_PASSWORD:-staffing_app_dev}@db:5432/${POSTGRES_DB:-staffing}
+      DATABASE_OWNER_URL: postgres://${POSTGRES_OWNER_USER:-staffing_owner}:${POSTGRES_OWNER_PASSWORD:-staffing_owner_dev}@db:5432/${POSTGRES_DB:-staffing}
+    ports:
+      - '3000:3000'
+
+volumes:
+  pgdata:
