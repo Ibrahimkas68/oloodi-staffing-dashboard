@@ -79,6 +79,32 @@ covers it.
   three Invite buttons; clicking Invite showed "Inviting…" (disabled), then "✓ Invite sent to
   Youssef"; an accept sent with curl updated the row, Filled 1/3 and the bar without reload.
 
+### 2026-11-09 · US3 check in and check out (T054 to T056) · analyser, architect and reviewer agents + Claude
+- **Asked:** a worker checks in and out; check-out is final; Filled does not change. The analyser
+  found that the buttons, the final message and the recorded-time rows already existed from US2, so
+  US3 became: the API tests (T054), one bug fix, doc corrections, and a browser verification.
+- **Produced:** `attendance.test.ts` (19 tests: check in and out, every refusal, repeats, events,
+  counts, a parallel check-in and check-out), `stamps.test.ts` (deterministic), a fix in
+  `repository.ts` and `schema.sql`.
+- **Bug found by the analyser:** stamps used `now()`, the START of the transaction. A check-out that
+  began before a check-in but waited behind it for the shift lock could stamp an earlier time than
+  the check-in, break the database constraint and return a 500. Stamps, `updated_at` and the event
+  time now use `clock_timestamp()`, evaluated after the lock is held. The parallel API test only
+  guards this by timing, so the deterministic proof is `stamps.test.ts` (sleeps inside a
+  transaction); I confirmed it fails against the old code.
+- **Reviewer findings fixed:** `stamps.test.ts` rolled back only on success, so a failing assertion
+  left a transaction open, blocked the next test's database reset and caused an unrelated 6 s
+  timeout (reproduced by putting `now()` back: now exactly two tests fail and nothing hangs);
+  `data-model.md` events row and transaction steps now match `service.ts`.
+- **Decided against:** a `GREATEST(clock_timestamp(), checked_in_at)` guard. It would only matter if
+  the database clock stepped backwards, and the constraint then fails loudly instead of storing bad
+  data. Known limit, not worth the complexity here.
+- **Verified:** typecheck, lint, 161 tests (52 shared, 62 server, 47 web), build. Browser: worker
+  checked in (Check out only, green dot, three times) and out (grey panel, check circle, "You
+  checked out at HH:MM. Thanks!", four times); dashboard shows Filled 1/3, Checked in now 0,
+  Checked out 1; check-in or cancel after check-out is a 409 with the current state; a repeated
+  check-out returns `changed:false`.
+
 ### 2026-11-09 · US2 worker view (T048 to T053) · analyser, architect and reviewer agents + Claude
 - **Asked:** the worker picks a name, sees the shift and both statuses, and can accept, decline,
   cancel and accept again, with only the allowed buttons shown. Workflow: analyser writes a brief,

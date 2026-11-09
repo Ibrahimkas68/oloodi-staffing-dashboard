@@ -34,7 +34,7 @@ CREATE TABLE assignments (
   cancelled_at   timestamptz,
   checked_in_at  timestamptz,
   checked_out_at timestamptz,
-  updated_at     timestamptz NOT NULL DEFAULT now(),
+  updated_at     timestamptz NOT NULL DEFAULT clock_timestamp(),
 
   CONSTRAINT one_assignment_per_worker UNIQUE (shift_id, worker_id),
   -- Attendance only exists for accepted workers (participation stays Accepted during attendance).
@@ -64,7 +64,8 @@ CREATE TABLE events (
     CHECK (action IN ('invite', 'accept', 'decline', 'cancel', 'check_in', 'check_out')),
   actor         text        NOT NULL CHECK (actor IN ('manager', 'worker')),
   version       bigint      NOT NULL,
-  at            timestamptz NOT NULL DEFAULT now(),
+  -- The app sets this with clock_timestamp() (time of the write); the default is only a fallback.
+  at            timestamptz NOT NULL DEFAULT clock_timestamp(),
   CONSTRAINT one_event_per_version UNIQUE (shift_id, version)
 );
 

@@ -150,12 +150,12 @@ actions, tests and screens.
 
 ### Tests for User Story 3
 
-- [ ] T054 [P] [US3] API test in `server/tests/api/attendance.test.ts`: check in accepted+not_started → checked_in, `checkedInAt` set, participation still accepted; check out → checked_out, `checkedOutAt >= checkedInAt`, filled unchanged; check in after check out → 409; cancel while checked in → 409; check in when invited, declined or cancelled → 409; repeated check-in → `changed:false`, same `checkedInAt`
+- [x] T054 [P] [US3] API test in `server/tests/api/attendance.test.ts` (routes `POST /api/assignments/:id/check-in` and `/check-out`): check in accepted+not_started → checked_in, `checkedInAt` set, participation still accepted, counts updated; check out → checked_out, `checkedOutAt >= checkedInAt`, filled unchanged; check in after check out → 409; cancel while checked in or after check out → 409; check in when uninvited, invited, declined or cancelled → 409; check out when not checked in → 409; every refusal leaves the version and events unchanged; repeated check-in and repeated check-out → `changed:false`, same time, same version; a check-in racing a check-out never returns 500
 
 ### Implementation for User Story 3
 
-- [ ] T055 [US3] Extend `web/src/components/WorkerActions.tsx` with the Checked in → "Check out" button and the Checked out final message "You checked out at HH:MM. Thanks!" with no buttons (Check in and Cancel exist since T052)
-- [ ] T056 [US3] Verify that the "Checked in at HH:MM" and "Checked out at HH:MM" rows already built in `web/src/components/WorkerStatus.tsx` (T051) appear after check-in and check-out; no new code expected
+- [x] T055 [US3] Verify only, no new code: the Check out button and the "You checked out at HH:MM. Thanks!" final message (no buttons) were built with T052 in `web/src/components/WorkerActions.tsx`
+- [x] T056 [US3] Verify that the "Checked in at HH:MM" and "Checked out at HH:MM" rows already built in `web/src/components/WorkerStatus.tsx` (T051) appear after check-in and check-out; no new code expected
 
 **Checkpoint**: Full happy path invite → accept → check in → check out works across two windows.
 
@@ -169,7 +169,7 @@ actions, tests and screens.
 
 ### Tests for User Story 4
 
-- [ ] T057 [P] [US4] Concurrency test in `server/tests/api/concurrency.test.ts`: 10 parallel identical check-ins → exactly 1 `changed:true`, 9 `changed:false`, 1 event, 1 `checkedInAt`; parallel cancel and check-in on the same assignment → exactly one applied, the other 200 `changed:false` or 409, final state valid; versions in events are strictly increasing
+- [ ] T057 [P] [US4] Concurrency test in `server/tests/api/concurrency.test.ts`: 10 parallel identical check-ins → exactly 1 `changed:true`, 9 `changed:false`, 1 event, 1 `checkedInAt`; parallel cancel and check-in on the same assignment → exactly one applied, the other 200 `changed:false` or 409, final state valid; versions in events are strictly increasing; check-in racing check-out on the same accepted worker → check-out 409 with check-in 200, or both 200, never 500
 - [ ] T058 [P] [US4] API test in `server/tests/api/health.test.ts`: health 200 with DB up; with the pool pointed at a stopped or wrong DB, health 503 and an action returns 500 `INTERNAL` with no stack in the body
 - [ ] T059 [P] [US4] Playwright test in `e2e/tests/live-sync.spec.ts`: manager and worker in two browser contexts; invite, accept, check in, check out; manager shows each change without reload; reload both pages and verify identical statuses and times
 - [ ] T060 [P] [US4] Playwright test in `e2e/tests/recovery.spec.ts`: set the manager context offline, act from the worker context, verify the offline indicator, set online, verify the dashboard shows the new state without reload
