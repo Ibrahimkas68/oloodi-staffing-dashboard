@@ -5,7 +5,9 @@ import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  resolve: { conditions: ['source'] },
+  // Use the TypeScript source of @staffing/shared (its "source" export condition), no build step.
+  resolve: { conditions: ['source', 'module', 'browser', 'development|production'] },
+  ssr: { resolve: { conditions: ['source'], externalConditions: ['source'] } },
   server: {
     port: 5173,
     // In development the API runs on its own port; in production the server serves this app.

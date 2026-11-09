@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<script src="shiftboard-data.js"></script>
+<style>body{margin:0}a{color:#4A3A96}a:hover{color:#141517}</style>
+</helmet>
+<div data-screen-label="Manager dashboard" style="width:1440px;height:900px;background:#030405;display:flex;font-family:'Geist',system-ui,sans-serif;font-variant-numeric:tabular-nums;position:relative;overflow:hidden;color:#F4F4F1;box-sizing:border-box">
+  <nav style="width:180px;flex-shrink:0;padding:28px 14px;display:flex;flex-direction:column;gap:32px;box-sizing:border-box">
+    <div style="display:flex;align-items:center;gap:10px;padding:0 10px">
+      <span style="width:20px;height:20px;border-radius:7px;background:#F4F4F1;display:inline-flex;align-items:center;justify-content:center"><span style="width:8px;height:8px;border-radius:2px;background:#030405"></span></span>
+      <span style="font-size:18px;font-weight:600;letter-spacing:-0.01em">Shiftboard</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4px;font-size:15px">
+      <div style="height:40px;display:flex;align-items:center;padding:0 12px;border-radius:10px;background:#1B1D20;color:#F4F4F1;font-weight:500">Dashboard</div>
+      <div style="height:40px;display:flex;align-items:center;padding:0 12px;border-radius:10px;color:#A3A5A0;cursor:pointer" style-hover="color:#F4F4F1">Workers</div>
+      <div style="height:40px;display:flex;align-items:center;padding:0 12px;border-radius:10px;color:#A3A5A0;cursor:pointer" style-hover="color:#F4F4F1">Activity</div>
+    </div>
+  </nav>
+
+  <div style="flex:1;min-width:0;display:flex;flex-direction:column;padding:12px 12px 12px 0;box-sizing:border-box">
+    <sc-if value="{{ showBanner }}" hint-placeholder-val="{{ false }}">
+      <div role="status" style="margin-bottom:4px;min-height:44px;border-radius:14px;background:#F4E6CC;color:#5E3A08;display:flex;align-items:center;gap:12px;padding:0 16px;font-size:15px;animation:sbFade 180ms ease-out">
+        <span style="width:12px;height:12px;border-radius:999px;border:2px solid #74470A;background:linear-gradient(90deg,#74470A 50%,transparent 50%);box-sizing:border-box;flex-shrink:0"></span>
+        <strong style="font-weight:600">Live updates paused. Reconnecting…</strong>
+        <span>Actions may fail until we're back.</span>
+      </div>
+    </sc-if>
+
+    <header style="height:84px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 8px;gap:24px">
+      <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+        <h1 style="margin:0;font-size:26px;line-height:1.15;font-weight:600;letter-spacing:-0.01em">Rabat Tech Summit · Hall Setup</h1>
+        <div style="display:flex;gap:10px;font-size:15px;color:#A3A5A0;flex-wrap:wrap">
+          <span>Today, Sun 8 Nov</span><span>·</span><span>14:00–20:00</span><span>·</span><span>Main Hall, Rabat</span><span>·</span><span>3 workers required</span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;height:38px;padding:0 16px;border-radius:999px;background:#16181A;border:1px solid #2A2C30;font-size:15px;white-space:nowrap;flex-shrink:0">
+        <sc-if value="{{ isLive }}" hint-placeholder-val="{{ true }}">
+          <span style="position:relative;width:9px;height:9px;display:inline-flex"><span style="position:absolute;inset:0;border-radius:999px;background:#9DDA4F;opacity:0;animation:sbPulse 1.6s ease-out infinite"></span><span style="position:relative;width:9px;height:9px;border-radius:999px;background:#9DDA4F"></span></span>
+          <span style="font-weight:600;color:#9DDA4F">Live</span><span style="color:#A3A5A0">· synced {{ syncedAgo }}s ago</span>
+        </sc-if>
+        <sc-if value="{{ isReconnecting }}" hint-placeholder-val="{{ false }}">
+          <span style="width:10px;height:10px;border-radius:999px;border:1.5px solid #E8A93B;background:linear-gradient(90deg,#E8A93B 50%,transparent 50%);box-sizing:border-box"></span>
+          <span style="font-weight:600;color:#E8A93B">Reconnecting…</span>
+        </sc-if>
+        <sc-if value="{{ isOffline }}" hint-placeholder-val="{{ false }}">
+          <span style="width:10px;height:10px;border-radius:999px;border:1.5px solid #A3A5A0;box-sizing:border-box"></span>
+          <span style="font-weight:600;color:#E8E9E4">Offline</span><span style="color:#A3A5A0">, data from {{ dataFrom }}</span>
+        </sc-if>
+      </div>
+    </header>
+
+    <div style="flex:1;min-height:0;display:flex;gap:12px">
+      <main style="flex:1;min-width:0;background:#F4F4F1;border-radius:24px;padding:24px;display:flex;flex-direction:column;gap:18px;color:#141517;position:relative;box-sizing:border-box">
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px">
+          <div style="background:#FCFCFA;border:1px solid #E2E3DE;border-radius:16px;padding:16px 20px 18px;display:flex;flex-direction:column;gap:10px">
+            <span style="font-size:16px;font-weight:500;color:#4F5153">Filled</span>
+            <div style="display:flex;align-items:baseline;font-size:64px;line-height:1;font-weight:600;letter-spacing:-0.03em">{{ kFilled }}<span style="font-size:36px;color:#8A8C8E;font-weight:500">/3</span></div>
+            <div style="display:flex;gap:4px;height:18px;align-items:center">
+              <sc-for list="{{ segs }}" as="s" hint-placeholder-count="3"><span style="flex:1;height:8px;border-radius:999px;background:{{ s.bg }}"></span></sc-for>
+            </div>
+          </div>
+          <div style="background:#FCFCFA;border:1px solid #E2E3DE;border-radius:16px;padding:16px 20px 18px;display:flex;flex-direction:column;gap:10px">
+            <span style="font-size:16px;font-weight:500;color:#4F5153">Remaining</span>
+            <div style="font-size:64px;line-height:1;font-weight:600;letter-spacing:-0.03em">{{ kRemaining }}</div>
+            <span style="font-size:14px;color:#4F5153;height:18px">places still to fill</span>
+          </div>
+          <div style="background:#FCFCFA;border:1px solid #E2E3DE;border-radius:16px;padding:16px 20px 18px;display:flex;flex-direction:column;gap:10px">
+            <span style="font-size:16px;font-weight:500;color:#4F5153">Checked in now</span>
+            <div style="font-size:64px;line-height:1;font-weight:600;letter-spacing:-0.03em">{{ kIn }}</div>
+            <span style="font-size:14px;color:#4F5153;height:18px">on site right now</span>
+          </div>
+          <div style="background:#FCFCFA;border:1px solid #E2E3DE;border-radius:16px;padding:16px 20px 18px;display:flex;flex-direction:column;gap:10px">
+            <span style="font-size:16px;font-weight:500;color:#4F5153">Checked out</span>
+            <div style="font-size:64px;line-height:1;font-weight:600;letter-spacing:-0.03em">{{ kOut }}</div>
+            <span style="font-size:14px;color:#4F5153;height:18px">still count as filled</span>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:12px;font-size:20px;line-height:1.3;min-height:30px">
+          <sc-if value="{{ isComplete }}" hint-placeholder-val="{{ false }}">
+            <span style="width:24px;height:24px;border-radius:999px;background:#2C5210;color:#FCFCFA;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3.2 7.3l2.5 2.5 5-5.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+          </sc-if>
+          <sc-if value="{{ notComplete }}" hint-placeholder-val="{{ true }}">
+            <span style="width:10px;height:10px;border-radius:999px;background:#141517;flex-shrink:0;margin:0 7px"></span>
+          </sc-if>
+          <div style="display:flex;flex-wrap:wrap;column-gap:10px;text-wrap:pretty">
+            <sc-for list="{{ rParts }}" as="p" hint-placeholder-count="3"><span style="display:inline-flex;gap:10px;font-weight:{{ p.w }}"><span style="color:#A9ABA5;display:{{ p.sep }}">·</span>{{ p.t }}</span></sc-for>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:4px">
+          <h2 style="margin:0;font-size:18px;font-weight:600">Workers</h2>
+          <div style="display:flex;align-items:center;gap:18px;font-size:14px;color:#4F5153">
+            <span style="display:inline-flex;align-items:center;gap:8px"><span style="width:28px;height:16px;border-radius:999px;background:#DFF0C8"></span>Participation: did they say yes?</span>
+            <span style="display:inline-flex;align-items:center;gap:8px"><span style="width:28px;height:16px;border-radius:999px;border:1.5px solid #141517;box-sizing:border-box"></span>Attendance: are they on site?</span>
+          </div>
+        </div>
+
+        <div style="background:#FCFCFA;border:1px solid #E2E3DE;border-radius:16px;overflow:hidden">
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) 124px 150px 68px 90px 84px 96px 100px;height:42px;align-items:center;font-size:13px;font-weight:500;color:#4F5153;border-bottom:1px solid #E5E6E1;background:#F7F7F4">
+            <span style="padding:0 10px 0 16px">Worker</span>
+            <span style="padding:0 10px">Participation</span>
+            <span style="padding:0 10px">Attendance</span>
+            <span style="padding:0 8px;white-space:nowrap">Invited</span>
+            <span style="padding:0 8px;white-space:nowrap">Responded</span>
+            <span style="padding:0 8px;white-space:nowrap">Checked in</span>
+            <span style="padding:0 8px;white-space:nowrap">Checked out</span>
+            <span style="padding:0 16px 0 4px;text-align:right">Action</span>
+          </div>
+          <sc-for list="{{ rows }}" as="r" hint-placeholder-count="3">
+            <div data-recent="{{ r.recent }}" style="position:relative;display:grid;grid-template-columns:minmax(0,1fr) 124px 150px 68px 90px 84px 96px 100px;height:74px;align-items:center;border-top:1px solid #ECECE8">
+              <span style="position:absolute;inset:0;background:rgba(157,218,79,0.32);opacity:{{ r.fo }};transition:{{ r.ft }};pointer-events:none"></span>
+              <div style="position:relative;display:flex;align-items:center;gap:10px;padding:0 8px 0 14px;min-width:0">
+                <span style="width:34px;height:34px;border-radius:999px;background:#DCDDD7;color:#141517;font-size:14px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">{{ r.initials }}</span>
+                <span style="font-size:17px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span>
+              </div>
+              <div style="position:relative;padding:0 10px"><span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:999px;background:{{ r.pBg }};color:{{ r.pFg }};font-size:15px;font-weight:600;white-space:nowrap">{{ r.pLabel }}</span></div>
+              <div style="position:relative;padding:0 10px"><span style="display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 11px 0 9px;border-radius:999px;border:1.5px solid {{ r.aBorder }};color:{{ r.aFg }};font-size:15px;font-weight:500;box-sizing:border-box;white-space:nowrap">
+                <sc-if value="{{ r.isNS }}" hint-placeholder-val="{{ true }}"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.25" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2.4 2.1"></circle></svg></sc-if>
+                <sc-if value="{{ r.isIn }}" hint-placeholder-val="{{ false }}"><span style="position:relative;width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center"><span style="position:absolute;width:8px;height:8px;border-radius:999px;background:#9DDA4F;opacity:0;animation:sbPulse 1.6s ease-out infinite"></span><span style="position:relative;width:8px;height:8px;border-radius:999px;background:#3E8E1A"></span></span></sc-if>
+                <sc-if value="{{ r.isOut }}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6.5" fill="currentColor"></circle><path d="M4.2 7.2l1.9 1.9 3.7-3.9" stroke="#FCFCFA" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg></sc-if>
+                {{ r.aLabel }}</span></div>
+              <span style="position:relative;padding:0 8px;font-size:16px;color:{{ r.cInv }}">{{ r.tInv }}</span>
+              <span style="position:relative;padding:0 8px;font-size:16px;color:{{ r.cResp }}">{{ r.tResp }}</span>
+              <span style="position:relative;padding:0 8px;font-size:16px;color:{{ r.cIn }}">{{ r.tIn }}</span>
+              <span style="position:relative;padding:0 8px;font-size:16px;color:{{ r.cOut }}">{{ r.tOut }}</span>
+              <div style="position:relative;display:flex;justify-content:flex-end;align-items:center;gap:6px;padding:0 14px 0 4px">
+                <sc-if value="{{ r.canInvite }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ r.onInvite }}" style="height:34px;padding:0 14px;border:0;border-radius:10px;background:#9DDA4F;color:#030405;font:600 14px 'Geist',sans-serif;cursor:pointer" style-hover="background:#92CF44" style-active="background:#86C23A;transform:scale(0.97)">Invite</button>
+                </sc-if>
+                <button onClick="{{ r.onCopy }}" title="Copy worker link" aria-label="Copy worker link for {{ r.first }}" style="width:34px;height:34px;border-radius:10px;border:1px solid #DCDDD7;background:#FCFCFA;color:#4F5153;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0" style-hover="background:#ECECE8;color:#141517">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="5.5" y="5.5" width="8" height="8" rx="2" stroke="currentColor" stroke-width="1.4"></rect><path d="M10.5 3.5V3.2A1.7 1.7 0 0 0 8.8 1.5H4.2A1.7 1.7 0 0 0 2.5 3.2v4.6a1.7 1.7 0 0 0 1.7 1.7h.3" stroke="currentColor" stroke-width="1.4"></path></svg>
+                </button>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+        <sc-if value="{{ showDemo }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute;right:20px;bottom:20px;background:#0B0C0E;border:1.5px dashed #8872D3;border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:10px;color:#E8E9E4;box-shadow:0 8px 24px rgba(3,4,5,.18)">
+            <div style="display:flex;justify-content:space-between;gap:16px;font-family:'Geist Mono',monospace;font-size:12px;letter-spacing:0.08em">
+              <span style="color:#B7A9EE;font-weight:500">DEMO MODE</span><span style="color:#8A8C8E">target: {{ demoTarget }}</span>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button onClick="{{ onSpam }}" style="height:36px;padding:0 14px;border-radius:10px;background:#1B1D20;border:1px solid #34363A;color:#F4F4F1;font:500 14px 'Geist Mono',monospace;cursor:pointer;white-space:nowrap" style-hover="background:#26282B" style-active="transform:scale(0.97)">Spam check-in ×10</button>
+              <button onClick="{{ onOutage }}" style="height:36px;padding:0 14px;border-radius:10px;background:#1B1D20;border:1px solid #34363A;color:#F4F4F1;font:500 14px 'Geist Mono',monospace;cursor:pointer;white-space:nowrap" style-hover="background:#26282B" style-active="transform:scale(0.97)">Simulate 5s outage</button>
+            </div>
+          </div>
+        </sc-if>
+      </main>
+
+      <aside style="width:272px;flex-shrink:0;background:#F4F4F1;border-radius:24px;padding:22px;display:flex;flex-direction:column;gap:12px;color:#141517;box-sizing:border-box;min-height:0">
+        <div style="display:flex;align-items:baseline;justify-content:space-between">
+          <h2 style="margin:0;font-size:18px;font-weight:600">Activity</h2>
+          <span style="font-size:13px;color:#4F5153">Newest first</span>
+        </div>
+        <div style="flex:1;min-height:0;overflow:auto">{{ timeline }}</div>
+        <div style="background:#FCFCFA;border:1px solid #E2E3DE;border-radius:16px;overflow:hidden;flex-shrink:0">
+          <button onClick="{{ toggleMetrics }}" aria-expanded="{{ metricsOpen }}" style="box-sizing:border-box;width:100%;display:flex;justify-content:space-between;align-items:center;padding:12px 14px;cursor:pointer;font:600 15px 'Geist',sans-serif;color:#141517;background:transparent;border:0">Live metrics<span style="font-size:13px;font-weight:500;color:#4F5153">{{ metricsToggle }}</span></button>
+          <sc-if value="{{ metricsOpen }}" hint-placeholder-val="{{ true }}">
+            <div style="padding:0 14px 14px;display:flex;flex-direction:column;gap:8px;font-size:14px">
+              <div style="display:flex;justify-content:space-between;gap:8px"><span style="color:#4F5153">Last update delay</span><span style="font-family:'Geist Mono',monospace;white-space:nowrap;flex-shrink:0">{{ mDelay }}</span></div>
+              <div style="display:flex;justify-content:space-between;gap:8px"><span style="color:#4F5153">Last reconnection recovery</span><span style="font-family:'Geist Mono',monospace;white-space:nowrap;flex-shrink:0">{{ mRecovery }}</span></div>
+              <div style="display:flex;justify-content:space-between;gap:8px"><span style="color:#4F5153">Snapshot version</span><span style="font-family:'Geist Mono',monospace;white-space:nowrap;flex-shrink:0">{{ mVersion }}</span></div>
+            </div>
+          </sc-if>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div style="position:absolute;top:{{ toastTop }};right:24px;width:360px;z-index:5">{{ toastsEl }}</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;scenario&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;mid&quot;,&quot;empty&quot;,&quot;end&quot;],&quot;default&quot;:&quot;mid&quot;,&quot;tsType&quot;:&quot;'mid'|'empty'|'end'&quot;},&quot;connection&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;live&quot;,&quot;reconnecting&quot;,&quot;offline&quot;],&quot;default&quot;:&quot;live&quot;,&quot;tsType&quot;:&quot;'live'|'reconnecting'|'offline'&quot;},&quot;showDemo&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;model&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;object&quot;},&quot;toasts&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;array&quot;},&quot;flash&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;object&quot;},&quot;onInvite&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;function&quot;},&quot;onCopy&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;function&quot;},&quot;onSpam&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;function&quot;},&quot;onOutage&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;function&quot;}}">
+class Component extends DCLogic {
+  state = { metricsOpen: true, ready: !!window.SB };
+  componentDidMount() {
+    if (!window.SB) this._t = setInterval(() => { if (window.SB) { clearInterval(this._t); this.setState({ ready: true }); } }, 30);
+  }
+  componentWillUnmount() { clearInterval(this._t); }
+  renderVals() {
+    const SB = window.SB; if (!SB) return {};
+    const p = this.props, R = React;
+    const m = p.model ?? SB.scenario(p.scenario ?? 'mid');
+    const conn = p.connection ?? m.conn ?? 'live';
+    const d = SB.derive(m), f = p.flash || {};
+    const rows = m.workers.map(w => {
+      const on = f.wid === w.id && f.on;
+      return Object.assign(SB.row(w), {
+        recent: String(!!(m.lastChange && m.lastChange.wid === w.id)),
+        fo: on ? 1 : 0, ft: on ? 'none' : 'opacity 1000ms ease-out',
+        onInvite: () => p.onInvite && p.onInvite(w.id),
+        onCopy: () => p.onCopy && p.onCopy(w.id)
+      });
+    });
+    return {
+      rows, segs: d.segs,
+      kFilled: SB.num(R, d.filled), kRemaining: SB.num(R, d.remaining), kIn: SB.num(R, d.checkedIn), kOut: SB.num(R, d.checkedOut),
+      isComplete: d.readiness.complete, notComplete: !d.readiness.complete,
+      rParts: d.readiness.parts.map((t, i) => ({ t, sep: i ? 'inline' : 'none', w: i ? 400 : 600 })),
+      isLive: conn === 'live', isReconnecting: conn === 'reconnecting', isOffline: conn === 'offline',
+      showBanner: conn !== 'live',
+      syncedAgo: p.syncedAgo ?? m.syncedAgo ?? 2,
+      dataFrom: SB.fmt(m.dataFrom ?? m.now),
+      timeline: SB.timelineEl(R, m),
+      toastsEl: SB.toastsEl(R, p.toasts || [], 'top'),
+      toastTop: conn !== 'live' ? '148px' : '100px',
+      metricsOpen: this.state.metricsOpen,
+      metricsToggle: this.state.metricsOpen ? 'Hide' : 'Show',
+      toggleMetrics: () => this.setState(s => ({ metricsOpen: !s.metricsOpen })),
+      mDelay: m.metrics.delay + ' ms',
+      mRecovery: m.metrics.recovery != null ? m.metrics.recovery.toFixed(1) + ' s' : '—',
+      mVersion: 'v' + m.version,
+      showDemo: p.showDemo ?? true,
+      demoTarget: p.demoTarget ?? 'Salma',
+      onSpam: () => p.onSpam && p.onSpam(),
+      onOutage: () => p.onOutage && p.onOutage()
+    };
+  }
+}
+</script>
+</body>
+</html>

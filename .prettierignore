@@ -5,3 +5,4 @@ test-results
 .specify
 specs
 package-lock.json
+docs

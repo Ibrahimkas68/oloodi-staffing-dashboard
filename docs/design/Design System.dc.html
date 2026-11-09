@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<script src="shiftboard-data.js"></script>
+<style>body{margin:0;background:#F4F4F1}a{color:#4A3A96;text-decoration:none;font-weight:500}a:hover{color:#141517}</style>
+</helmet>
+<div style="background:#F4F4F1;min-height:100vh;font-family:'Geist',system-ui,sans-serif;font-variant-numeric:tabular-nums;color:#141517">
+  <div style="max-width:1200px;margin:0 auto;padding:48px 32px 80px;display:flex;flex-direction:column;gap:56px">
+    <header style="display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap">
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <span style="font:500 13px 'Geist Mono',monospace;letter-spacing:0.08em;color:#4F5153">SHIFTBOARD · DESIGN SYSTEM</span>
+        <h1 style="margin:0;font-size:32px;font-weight:600;letter-spacing:-0.01em">Tokens and components</h1>
+        <p style="margin:0;font-size:16px;color:#4F5153;max-width:680px;text-wrap:pretty">Token names map 1:1 to Tailwind theme keys (e.g. <span style="font-family:'Geist Mono',monospace;font-size:14px">bg-p-accepted</span>, <span style="font-family:'Geist Mono',monospace;font-size:14px">text-ink</span>). Contrast ratios below are computed live from the hex values.</p>
+      </div>
+      <nav style="display:flex;gap:20px;font-size:15px"><a href="Shiftboard.dc.html">← Live prototype</a><a href="State%20Sheet.dc.html">State sheet →</a></nav>
+    </header>
+
+    <section style="display:flex;flex-direction:column;gap:20px">
+      <h2 style="margin:0;font-size:22px;font-weight:600">Colour</h2>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <h3 style="margin:0;font-size:14px;font-weight:600;color:#4F5153">Surface, text, accent</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px">
+          <sc-for list="{{ base }}" as="c" hint-placeholder-count="12">
+            <div style="background:#FCFCFA;border:1px solid #E2E3DE;border-radius:16px;overflow:hidden">
+              <div style="height:64px;background:{{ c.hex }};border-bottom:1px solid #E2E3DE"></div>
+              <div style="padding:10px 12px;display:flex;flex-direction:column;gap:2px">
+                <span style="font:500 13px 'Geist Mono',monospace">{{ c.name }}</span>
+                <span style="font:400 12px 'Geist Mono',monospace;color:#4F5153">{{ c.hex }}</span>
+                <span style="font-size:12px;color:#4F5153">{{ c.use }}</span>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <h3 style="margin:0;font-size:14px;font-weight:600;color:#4F5153">Participation · soft-tinted pill</h3>
+          <div style="background:#FCFCFA;border:1px solid #E2E3DE;border-radius:16px">
+            <sc-for list="{{ ptints }}" as="t" hint-placeholder-count="5">
+              <div style="display:grid;grid-template-columns:130px minmax(0,1fr) 70px;align-items:center;gap:12px;padding:10px 14px;border-top:1px solid #ECECE8">
+                <span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:999px;background:{{ t.bg }};color:{{ t.fg }};font-size:15px;font-weight:600;width:max-content">{{ t.label }}</span>
+                <span style="font:400 12px 'Geist Mono',monospace;color:#4F5153">{{ t.token }} · {{ t.fg }} on {{ t.bg }}</span>
+                <span style="font:500 12px 'Geist Mono',monospace;text-align:right">{{ t.cr }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <h3 style="margin:0;font-size:14px;font-weight:600;color:#4F5153">Attendance · outlined chip + icon</h3>
+          <div style="background:#FCFCFA;border:1px solid #E2E3DE;border-radius:16px">
+            <div style="display:grid;grid-template-columns:150px minmax(0,1fr) 70px;align-items:center;gap:12px;padding:10px 14px">
+              <span style="display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 11px 0 9px;border-radius:999px;border:1.5px solid #A9ABA5;color:#4F5153;font-size:15px;font-weight:500;box-sizing:border-box;width:max-content"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.25" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2.4 2.1"></circle></svg>Not started</span>
+              <span style="font:400 12px 'Geist Mono',monospace;color:#4F5153">a-not-started · circle-dashed · #4F5153, border #A9ABA5</span>
+              <span style="font:500 12px 'Geist Mono',monospace;text-align:right">{{ crNS }}</span>
+            </div>
+            <div style="display:grid;grid-template-columns:150px minmax(0,1fr) 70px;align-items:center;gap:12px;padding:10px 14px;border-top:1px solid #ECECE8">
+              <span style="display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 11px 0 9px;border-radius:999px;border:1.5px solid #141517;color:#141517;font-size:15px;font-weight:500;box-sizing:border-box;width:max-content"><span style="position:relative;width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center"><span style="position:absolute;width:8px;height:8px;border-radius:999px;background:#9DDA4F;opacity:0;animation:sbPulse 1.6s ease-out infinite"></span><span style="position:relative;width:8px;height:8px;border-radius:999px;background:#3E8E1A"></span></span>Checked in</span>
+              <span style="font:400 12px 'Geist Mono',monospace;color:#4F5153">a-checked-in · dot-pulse · #141517</span>
+              <span style="font:500 12px 'Geist Mono',monospace;text-align:right">{{ crIn }}</span>
+            </div>
+            <div style="display:grid;grid-template-columns:150px minmax(0,1fr) 70px;align-items:center;gap:12px;padding:10px 14px;border-top:1px solid #ECECE8">
+              <span style="display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 11px 0 9px;border-radius:999px;border:1.5px solid #6B6D70;color:#2E3033;font-size:15px;font-weight:500;box-sizing:border-box;width:max-content"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6.5" fill="currentColor"></circle><path d="M4.2 7.2l1.9 1.9 3.7-3.9" stroke="#FCFCFA" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>Checked out</span>
+              <span style="font:400 12px 'Geist Mono',monospace;color:#4F5153">a-checked-out · check · #2E3033, border #6B6D70</span>
+              <span style="font:500 12px 'Geist Mono',monospace;text-align:right">{{ crOut }}</span>
+            </div>
+          </div>
+          <h3 style="margin:8px 0 0;font-size:14px;font-weight:600;color:#4F5153">Feedback</h3>
+          <div style="background:#FCFCFA;border:1px solid #E2E3DE;border-radius:16px">
+            <sc-for list="{{ feedback }}" as="t" hint-placeholder-count="4">
+              <div style="display:grid;grid-template-columns:130px minmax(0,1fr) 70px;align-items:center;gap:12px;padding:10px 14px;border-top:1px solid #ECECE8">
+                <span style="display:inline-flex;align-items:center;height:28px;padding:0 12px;border-radius:10px;background:{{ t.bg }};color:{{ t.fg }};font-size:14px;font-weight:600;width:max-content">{{ t.label }}</span>
+                <span style="font:400 12px 'Geist Mono',monospace;color:#4F5153">{{ t.token }} · {{ t.fg }} on {{ t.bg }}</span>
+                <span style="font:500 12px 'Geist Mono',monospace;text-align:right">{{ t.cr }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:32px">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <h2 style="margin:0;font-size:22px;font-weight:600">Type · Geist / Geist Mono</h2>
+        <div style="background:#FCFCFA;border:1px solid #E2E3DE;border-radius:16px;padding:8px 16px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:10px 0;border-bottom:1px solid #ECECE8"><span style="font-size:64px;line-height:1;font-weight:600;letter-spacing:-0.03em">2/3</span><span style="font:400 12px 'Geist Mono',monospace;color:#4F5153">kpi · 64/600 · tnum</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:10px 0;border-bottom:1px solid #ECECE8"><span style="font-size:26px;font-weight:600">Shift title</span><span style="font:400 12px 'Geist Mono',monospace;color:#4F5153">title · 26/600</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:10px 0;border-bottom:1px solid #ECECE8"><span style="font-size:20px">Readiness line</span><span style="font:400 12px 'Geist Mono',monospace;color:#4F5153">lead · 20/400–600</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:10px 0;border-bottom:1px solid #ECECE8"><span style="font-size:18px;font-weight:600">Section heading</span><span style="font:400 12px 'Geist Mono',monospace;color:#4F5153">heading · 18/600</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:10px 0;border-bottom:1px solid #ECECE8"><span style="font-size:17px;font-weight:600">Amina El Idrissi</span><span style="font:400 12px 'Geist Mono',monospace;color:#4F5153">name · 17/600</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:10px 0;border-bottom:1px solid #ECECE8"><span style="font-size:15px">Body and status labels</span><span style="font:400 12px 'Geist Mono',monospace;color:#4F5153">body · 15/400–600</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:10px 0;border-bottom:1px solid #ECECE8"><span style="font-size:13px;font-weight:500;color:#4F5153">Column header</span><span style="font:400 12px 'Geist Mono',monospace;color:#4F5153">label · 13/500</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:10px 0"><span style="font:500 12px 'Geist Mono',monospace;letter-spacing:0.08em">DEMO MODE · v12</span><span style="font:400 12px 'Geist Mono',monospace;color:#4F5153">mono · 12–14/500</span></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:24px">
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <h2 style="margin:0;font-size:22px;font-weight:600">Spacing · 4px grid</h2>
+          <div style="display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><span style="width:4px;height:4px;background:#141517"></span><span style="font:400 12px 'Geist Mono',monospace">1·4</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><span style="width:8px;height:8px;background:#141517"></span><span style="font:400 12px 'Geist Mono',monospace">2·8</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><span style="width:12px;height:12px;background:#141517"></span><span style="font:400 12px 'Geist Mono',monospace">3·12</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><span style="width:16px;height:16px;background:#141517"></span><span style="font:400 12px 'Geist Mono',monospace">4·16</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><span style="width:20px;height:20px;background:#141517"></span><span style="font:400 12px 'Geist Mono',monospace">5·20</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><span style="width:24px;height:24px;background:#141517"></span><span style="font:400 12px 'Geist Mono',monospace">6·24</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><span style="width:32px;height:32px;background:#141517"></span><span style="font:400 12px 'Geist Mono',monospace">8·32</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><span style="width:48px;height:48px;background:#141517"></span><span style="font:400 12px 'Geist Mono',monospace">12·48</span></div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <h2 style="margin:0;font-size:22px;font-weight:600">Radius and shadow</h2>
+          <div style="display:flex;gap:16px;flex-wrap:wrap">
+            <div style="display:flex;flex-direction:column;gap:6px;align-items:center"><span style="width:64px;height:48px;border-radius:10px;background:#E5E6E1"></span><span style="font:400 12px 'Geist Mono',monospace">sm · 10</span></div>
+            <div style="display:flex;flex-direction:column;gap:6px;align-items:center"><span style="width:64px;height:48px;border-radius:16px;background:#E5E6E1"></span><span style="font:400 12px 'Geist Mono',monospace">card · 16</span></div>
+            <div style="display:flex;flex-direction:column;gap:6px;align-items:center"><span style="width:64px;height:30px;border-radius:999px;background:#E5E6E1;margin:9px 0"></span><span style="font:400 12px 'Geist Mono',monospace">pill · 999</span></div>
+            <div style="display:flex;flex-direction:column;gap:6px;align-items:center"><span style="width:64px;height:48px;border-radius:16px;background:#FCFCFA;border:1px solid #E2E3DE"></span><span style="font:400 12px 'Geist Mono',monospace">panel · 24</span></div>
+            <div style="display:flex;flex-direction:column;gap:6px;align-items:center"><span style="width:64px;height:48px;border-radius:16px;background:#FCFCFA;box-shadow:0 8px 24px rgba(3,4,5,.24)"></span><span style="font:400 12px 'Geist Mono',monospace">float · 0 8 24 /.24</span></div>
+          </div>
+          <p style="margin:0;font-size:13px;color:#4F5153">Cards use a line, not a shadow. Shadows only on things that float: toasts, demo panel.</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <h2 style="margin:0;font-size:22px;font-weight:600">Motion</h2>
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:14px">
+            <span style="font-family:'Geist Mono',monospace">fast · 160ms</span><span style="color:#4F5153">action cross-fade, banner</span>
+            <span style="font-family:'Geist Mono',monospace">base · 180ms</span><span style="color:#4F5153">timeline slide-in, toast</span>
+            <span style="font-family:'Geist Mono',monospace">pop · 200ms</span><span style="color:#4F5153">KPI digit</span>
+            <span style="font-family:'Geist Mono',monospace">highlight · 1000ms</span><span style="color:#4F5153">changed row fade-out</span>
+            <span style="font-family:'Geist Mono',monospace">ease-out-quart</span><span style="color:#4F5153">cubic-bezier(.2,.8,.2,1) for enters</span>
+            <span style="font-family:'Geist Mono',monospace">ease-out</span><span style="color:#4F5153">fades and highlight</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section style="display:flex;flex-direction:column;gap:20px">
+      <h2 style="margin:0;font-size:22px;font-weight:600">Components</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:20px">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <h3 style="margin:0;font-size:14px;font-weight:600;color:#4F5153">KPI card</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div style="background:#FCFCFA;border:1px solid #E2E3DE;border-radius:16px;padding:16px 20px 18px;display:flex;flex-direction:column;gap:10px"><span style="font-size:16px;font-weight:500;color:#4F5153">Filled</span><div style="display:flex;align-items:baseline;font-size:64px;line-height:1;font-weight:600;letter-spacing:-0.03em">2<span style="font-size:36px;color:#8A8C8E;font-weight:500">/3</span></div><div style="display:flex;gap:4px;height:18px;align-items:center"><span style="flex:1;height:8px;border-radius:999px;background:#141517"></span><span style="flex:1;height:8px;border-radius:999px;background:#141517"></span><span style="flex:1;height:8px;border-radius:999px;background:#DCDDD7"></span></div></div>
+            <div style="background:#FCFCFA;border:1px solid #E2E3DE;border-radius:16px;padding:16px 20px 18px;display:flex;flex-direction:column;gap:10px"><span style="font-size:16px;font-weight:500;color:#4F5153">Remaining</span><div style="font-size:64px;line-height:1;font-weight:600;letter-spacing:-0.03em">1</div><span style="font-size:14px;color:#4F5153;height:18px">places still to fill</span></div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <h3 style="margin:0;font-size:14px;font-weight:600;color:#4F5153">Connection badge</h3>
+          <div style="display:flex;flex-direction:column;gap:10px;align-items:flex-start;padding:16px;background:#030405;border-radius:16px">
+            <div style="display:flex;align-items:center;gap:8px;height:38px;padding:0 16px;border-radius:999px;background:#16181A;border:1px solid #2A2C30;font-size:15px"><span style="width:9px;height:9px;border-radius:999px;background:#9DDA4F"></span><span style="font-weight:600;color:#9DDA4F">Live</span><span style="color:#A3A5A0">· synced 2s ago</span></div>
+            <div style="display:flex;align-items:center;gap:8px;height:38px;padding:0 16px;border-radius:999px;background:#16181A;border:1px solid #2A2C30;font-size:15px"><span style="width:10px;height:10px;border-radius:999px;border:1.5px solid #E8A93B;background:linear-gradient(90deg,#E8A93B 50%,transparent 50%);box-sizing:border-box"></span><span style="font-weight:600;color:#E8A93B">Reconnecting…</span></div>
+            <div style="display:flex;align-items:center;gap:8px;height:38px;padding:0 16px;border-radius:999px;background:#16181A;border:1px solid #2A2C30;font-size:15px"><span style="width:10px;height:10px;border-radius:999px;border:1.5px solid #A3A5A0;box-sizing:border-box"></span><span style="font-weight:600;color:#E8E9E4">Offline</span><span style="color:#A3A5A0">, data from 14:32</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <h3 style="margin:0;font-size:14px;font-weight:600;color:#4F5153">Table row · default and just-changed</h3>
+        <div style="background:#FCFCFA;border:1px solid #E2E3DE;border-radius:16px;overflow:auto">
+          <div style="display:grid;grid-template-columns:minmax(200px,1fr) 124px 150px 68px 90px 84px 96px 100px;min-width:910px;height:74px;align-items:center">
+            <div style="display:flex;align-items:center;gap:10px;padding:0 8px 0 14px"><span style="width:34px;height:34px;border-radius:999px;background:#DCDDD7;font-size:14px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">SH</span><span style="font-size:17px;font-weight:600">Salma Haddad</span></div>
+            <div style="padding:0 10px"><span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:999px;background:#DFF0C8;color:#2C5210;font-size:15px;font-weight:600">Accepted</span></div>
+            <div style="padding:0 10px"><span style="display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 11px 0 9px;border-radius:999px;border:1.5px solid #A9ABA5;color:#4F5153;font-size:15px;font-weight:500;box-sizing:border-box"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.25" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2.4 2.1"></circle></svg>Not started</span></div>
+            <span style="padding:0 8px;font-size:16px">10:05</span><span style="padding:0 8px;font-size:16px">11:18</span><span style="padding:0 8px;font-size:16px;color:#8A8C8E">—</span><span style="padding:0 8px;font-size:16px;color:#8A8C8E">—</span>
+            <div style="display:flex;justify-content:flex-end;padding:0 14px 0 4px"><span style="width:34px;height:34px;border-radius:10px;border:1px solid #DCDDD7;box-sizing:border-box"></span></div>
+          </div>
+          <div style="display:grid;grid-template-columns:minmax(200px,1fr) 124px 150px 68px 90px 84px 96px 100px;min-width:910px;height:74px;align-items:center;border-top:1px solid #ECECE8;background:rgba(157,218,79,0.32)">
+            <div style="display:flex;align-items:center;gap:10px;padding:0 8px 0 14px"><span style="width:34px;height:34px;border-radius:999px;background:#DCDDD7;font-size:14px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">SH</span><span style="font-size:17px;font-weight:600">Salma Haddad</span></div>
+            <div style="padding:0 10px"><span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:999px;background:#DFF0C8;color:#2C5210;font-size:15px;font-weight:600">Accepted</span></div>
+            <div style="padding:0 10px"><span style="display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 11px 0 9px;border-radius:999px;border:1.5px solid #141517;color:#141517;font-size:15px;font-weight:500;box-sizing:border-box"><span style="width:8px;height:8px;border-radius:999px;background:#3E8E1A;margin:0 3px"></span>Checked in</span></div>
+            <span style="padding:0 8px;font-size:16px">10:05</span><span style="padding:0 8px;font-size:16px">11:18</span><span style="padding:0 8px;font-size:16px">14:33</span><span style="padding:0 8px;font-size:16px;color:#8A8C8E">—</span>
+            <div style="display:flex;justify-content:flex-end;padding:0 14px 0 4px"><span style="width:34px;height:34px;border-radius:10px;border:1px solid #DCDDD7;box-sizing:border-box"></span></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:20px">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <h3 style="margin:0;font-size:14px;font-weight:600;color:#4F5153">Timeline item</h3>
+          <div style="background:#FCFCFA;border:1px solid #E2E3DE;border-radius:16px;padding:4px 16px">
+            <div style="display:grid;grid-template-columns:44px 26px minmax(0,1fr);gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #E5E6E1"><span style="font-size:15px;color:#4F5153">14:02</span><span style="width:26px;height:26px;border-radius:999px;background:#DCDDD7;font-size:10px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">AE</span><span style="font-size:15px"><strong style="font-weight:600">Amina</strong> checked in</span></div>
+            <div style="display:grid;grid-template-columns:44px 26px minmax(0,1fr);gap:10px;align-items:center;padding:10px 0"><span style="font-size:15px;color:#4F5153">10:40</span><span style="width:26px;height:26px;border-radius:999px;background:#DCDDD7;font-size:10px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">YB</span><span style="font-size:15px"><strong style="font-weight:600">Youssef</strong> declined</span></div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <h3 style="margin:0;font-size:14px;font-weight:600;color:#4F5153">Toast</h3>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:grid;grid-template-columns:24px minmax(0,1fr);gap:12px;padding:12px 14px;background:#141517;color:#F4F4F1;border-radius:16px"><span style="width:24px;height:24px;border-radius:999px;background:#63B33B;color:#0B1702;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700">✓</span><span style="font-size:15px;font-weight:600;padding-top:2px">Checked in at 14:02</span></div>
+            <div style="display:grid;grid-template-columns:24px minmax(0,1fr);gap:12px;padding:12px 14px;background:#141517;color:#F4F4F1;border-radius:16px"><span style="width:24px;height:24px;border-radius:999px;background:#5A5C60;color:#F4F4F1;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700">i</span><span style="font-size:15px;font-weight:600;padding-top:2px">Already checked in at 14:02</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <h3 style="margin:0;font-size:14px;font-weight:600;color:#4F5153">Offline banner</h3>
+        <div style="min-height:44px;border-radius:14px;background:#F4E6CC;color:#5E3A08;display:flex;align-items:center;gap:12px;padding:10px 16px;font-size:15px;flex-wrap:wrap;box-sizing:border-box"><span style="width:12px;height:12px;border-radius:999px;border:2px solid #74470A;background:linear-gradient(90deg,#74470A 50%,transparent 50%);box-sizing:border-box"></span><strong style="font-weight:600">Live updates paused. Reconnecting…</strong><span>Actions may fail until we're back.</span></div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <h3 style="margin:0;font-size:14px;font-weight:600;color:#4F5153">Buttons · primary, secondary, danger, text</h3>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+          <button style="height:52px;padding:0 28px;border:0;border-radius:16px;background:#9DDA4F;color:#030405;font:600 16px 'Geist',sans-serif;cursor:pointer" style-hover="background:#92CF44" style-active="background:#86C23A;transform:scale(0.98)">Check in</button>
+          <button style="height:52px;padding:0 28px;border:1.5px solid #141517;border-radius:16px;background:#FCFCFA;color:#141517;font:600 16px 'Geist',sans-serif;cursor:pointer" style-hover="background:#ECECE8" style-active="background:#E2E3DE;transform:scale(0.98)">Decline</button>
+          <button style="height:52px;padding:0 28px;border:0;border-radius:16px;background:#B3362A;color:#FFFFFF;font:600 16px 'Geist',sans-serif;cursor:pointer" style-hover="background:#A02E23" style-active="background:#8E2A1C;transform:scale(0.98)">Cancel my spot</button>
+          <button style="height:48px;padding:0 20px;border:0;border-radius:16px;background:transparent;color:#8E2A1C;font:500 16px 'Geist',sans-serif;cursor:pointer" style-hover="background:#F7DEDA" style-active="background:#F0CFC9">Cancel my spot</button>
+          <button style="height:34px;padding:0 14px;border:0;border-radius:10px;background:#9DDA4F;color:#030405;font:600 14px 'Geist',sans-serif;cursor:pointer" style-hover="background:#92CF44">Invite</button>
+          <span style="font-size:13px;color:#4F5153">All states on the <a href="State%20Sheet.dc.html">state sheet</a>.</span>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:20px">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <h3 style="margin:0;font-size:14px;font-weight:600;color:#4F5153">Worker selector</h3>
+          <div style="padding:16px;background:#030405;border-radius:16px">
+            <div style="display:flex;gap:4px;padding:4px;background:#16181A;border-radius:999px;border:1px solid #2A2C30;max-width:358px">
+              <span style="flex:1;height:46px;border-radius:999px;display:flex;align-items:center;justify-content:center;gap:8px;color:#C9CBC6;font-size:15px;font-weight:600"><span style="width:26px;height:26px;border-radius:999px;background:#2A2C30;color:#E8E9E4;font-size:11px;display:inline-flex;align-items:center;justify-content:center">AE</span>Amina</span>
+              <span style="flex:1;height:46px;border-radius:999px;display:flex;align-items:center;justify-content:center;gap:8px;color:#C9CBC6;font-size:15px;font-weight:600"><span style="width:26px;height:26px;border-radius:999px;background:#2A2C30;color:#E8E9E4;font-size:11px;display:inline-flex;align-items:center;justify-content:center">YB</span>Youssef</span>
+              <span style="flex:1;height:46px;border-radius:999px;display:flex;align-items:center;justify-content:center;gap:8px;background:#F4F4F1;color:#141517;font-size:15px;font-weight:600"><span style="width:26px;height:26px;border-radius:999px;background:#DCDDD7;font-size:11px;display:inline-flex;align-items:center;justify-content:center">SH</span>Salma</span>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <h3 style="margin:0;font-size:14px;font-weight:600;color:#4F5153">Demo control panel · developer only</h3>
+          <div style="background:#0B0C0E;border:1.5px dashed #8872D3;border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:10px;color:#E8E9E4;width:max-content">
+            <div style="display:flex;justify-content:space-between;gap:16px;font-family:'Geist Mono',monospace;font-size:12px;letter-spacing:0.08em"><span style="color:#B7A9EE;font-weight:500">DEMO MODE</span><span style="color:#8A8C8E">target: Salma</span></div>
+            <div style="display:flex;gap:8px"><span style="height:36px;padding:0 14px;border-radius:10px;background:#1B1D20;border:1px solid #34363A;font:500 14px 'Geist Mono',monospace;display:inline-flex;align-items:center;white-space:nowrap">Spam check-in ×10</span><span style="height:36px;padding:0 14px;border-radius:10px;background:#1B1D20;border:1px solid #34363A;font:500 14px 'Geist Mono',monospace;display:inline-flex;align-items:center;white-space:nowrap">Simulate 5s outage</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const lum = h => { const v = [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16) / 255).map(c => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)); return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]; };
+    const cr = (a, b) => { const x = lum(a), y = lum(b); return ((Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05)).toFixed(1) + ':1'; };
+    const P = [['Uninvited', 'p-uninvited', '#E5E6E1', '#45474A'], ['Invited', 'p-invited', '#E9E5F7', '#4A3A96'], ['Accepted', 'p-accepted', '#DFF0C8', '#2C5210'], ['Declined', 'p-declined', '#F7DEDA', '#8E2A1C'], ['Cancelled', 'p-cancelled', '#F4E6CC', '#74470A']];
+    const F = [['Success', 'fb-success', '#DFF0C8', '#2C5210'], ['Neutral', 'fb-neutral', '#E5E6E1', '#45474A'], ['Warning', 'fb-warning', '#F4E6CC', '#74470A'], ['Danger', 'fb-danger', '#F7DEDA', '#8E2A1C']];
+    const map = a => a.map(([label, token, bg, fg]) => ({ label, token, bg, fg, cr: cr(fg, bg) }));
+    return {
+      ptints: map(P), feedback: map(F),
+      crNS: cr('#4F5153', '#FCFCFA'), crIn: cr('#141517', '#FCFCFA'), crOut: cr('#2E3033', '#FCFCFA'),
+      base: [
+        { name: 'shell', hex: '#030405', use: 'App shell, rails' },
+        { name: 'shell-raised', hex: '#16181A', use: 'Badge, selector track' },
+        { name: 'surface', hex: '#F4F4F1', use: 'Main content card' },
+        { name: 'surface-sunk', hex: '#E5E6E1', use: 'Dividers, empty fills' },
+        { name: 'card', hex: '#FCFCFA', use: 'KPI cards, table' },
+        { name: 'line', hex: '#E2E3DE', use: 'Card borders' },
+        { name: 'ink', hex: '#141517', use: 'Primary text, filled bar' },
+        { name: 'text-mid', hex: '#4F5153', use: 'Labels, secondary text' },
+        { name: 'text-muted', hex: '#8A8C8E', use: 'Empty "—", denominators' },
+        { name: 'accent-live', hex: '#9DDA4F', use: 'Live + primary action only' },
+        { name: 'accent-violet', hex: '#8872D3', use: 'Secondary highlight, demo' },
+        { name: 'warning', hex: '#E8A93B', use: 'Reconnecting, conflict' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

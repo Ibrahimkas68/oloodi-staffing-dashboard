@@ -6,10 +6,16 @@ import globals from 'globals';
 
 export default tseslint.config(
   {
-    ignores: ['**/dist/**', '**/coverage/**', '**/playwright-report/**', '**/test-results/**', '.specify/**'],
+    ignores: ['**/dist/**', '**/coverage/**', '**/playwright-report/**', '**/test-results/**', '.specify/**', 'docs/**'],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
+  {
+    rules: {
+      // Express error handlers need four parameters even when `next` is unused.
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+    },
+  },
   {
     files: ['shared/**/*.ts', 'server/**/*.ts', 'e2e/**/*.ts'],
     languageOptions: { globals: globals.node },

@@ -1,3 +1,4 @@
-// Public entry of the shared domain package.
-// Types, schemas, the transition table and deriveCounts are added in Phase 2 (T018 to T020).
-export {};
+export * from './schemas.js';
+export type * from './types.js';
+export * from './transitions.js';
+export * from './counts.js';

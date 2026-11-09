@@ -1,3 +1,148 @@
 @import 'tailwindcss';
+@import '@fontsource-variable/geist';
+@import '@fontsource-variable/geist-mono';
 
-/* Design tokens from the Claude Design project "Shiftboard" are added here with @theme (T035). */
+/*
+ * Shiftboard design tokens, taken from docs/design/Design System.dc.html and State Sheet.dc.html.
+ * Token names follow the design system (bg-p-accepted, text-ink, ...).
+ */
+@theme {
+  --font-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono Variable', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* Surface, text, accent */
+  --color-shell: #030405;
+  --color-shell-raised: #16181a;
+  --color-shell-hover: #1b1d20;
+  --color-shell-line: #2a2c30;
+  --color-shell-text: #f4f4f1;
+  --color-shell-mid: #a3a5a0;
+  --color-surface: #f4f4f1;
+  --color-surface-sunk: #e5e6e1;
+  --color-card: #fcfcfa;
+  --color-card-head: #f7f7f4;
+  --color-line: #e2e3de;
+  --color-line-soft: #ecece8;
+  --color-avatar: #dcddd7;
+  --color-ink: #141517;
+  --color-mid: #4f5153;
+  --color-muted: #8a8c8e;
+  --color-faint: #a9aba5;
+
+  --color-live: #9dda4f;
+  --color-live-hover: #92cf44;
+  --color-live-press: #86c23a;
+  --color-live-busy: #c3e59a;
+  --color-live-dot: #3e8e1a;
+  --color-violet: #8872d3;
+  --color-violet-soft: #b7a9ee;
+  --color-violet-ink: #4a3a96;
+  --color-warning: #e8a93b;
+  --color-danger: #b3362a;
+  --color-danger-hover: #a02e23;
+  --color-danger-press: #8e2a1c;
+
+  /* Participation · soft-tinted pill (all pairs pass WCAG AA) */
+  --color-p-uninvited: #e5e6e1;
+  --color-p-uninvited-fg: #45474a;
+  --color-p-invited: #e9e5f7;
+  --color-p-invited-fg: #4a3a96;
+  --color-p-accepted: #dff0c8;
+  --color-p-accepted-fg: #2c5210;
+  --color-p-declined: #f7deda;
+  --color-p-declined-fg: #8e2a1c;
+  --color-p-cancelled: #f4e6cc;
+  --color-p-cancelled-fg: #74470a;
+
+  /* Attendance · outlined chip */
+  --color-a-not-started: #4f5153;
+  --color-a-not-started-line: #a9aba5;
+  --color-a-checked-in: #141517;
+  --color-a-checked-out: #2e3033;
+  --color-a-checked-out-line: #6b6d70;
+
+  /* Feedback */
+  --color-banner: #f4e6cc;
+  --color-banner-fg: #5e3a08;
+  --color-banner-dot: #74470a;
+  --color-toast: #141517;
+  --color-toast-sub: #b5b7b2;
+  --color-toast-success: #63b33b;
+  --color-toast-neutral: #5a5c60;
+  --color-toast-conflict: #e8a93b;
+  --color-toast-network: #e36a5c;
+
+  /* Radius: sm 10, card 16, panel 24, pill 999 */
+  --radius-sm: 10px;
+  --radius-card: 16px;
+  --radius-panel: 24px;
+  --radius-pill: 999px;
+
+  /* Shadow only on things that float (toasts, demo panel) */
+  --shadow-float: 0 8px 24px rgba(3, 4, 5, 0.24);
+
+  /* Motion */
+  --ease-out-quart: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --animate-pop: sb-pop 200ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-slide-in: sb-slide-in 180ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-toast-in: sb-toast-in 180ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-toast-up: sb-toast-up 180ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-fade: sb-fade 160ms ease-out both;
+  --animate-pulse-dot: sb-pulse 1.6s ease-out infinite;
+  --animate-spin-fast: spin 700ms linear infinite;
+
+  @keyframes sb-pop {
+    from { opacity: 0; transform: translateY(10px) scale(0.94); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes sb-slide-in {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes sb-toast-in {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes sb-toast-up {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes sb-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes sb-pulse {
+    0% { opacity: 0.75; transform: scale(1); }
+    100% { opacity: 0; transform: scale(2.6); }
+  }
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-shell);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Only opacity and transform animate. With reduced motion everything appears in place and the
+   last changed row keeps a static lime border instead of the fading highlight. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition: none !important;
+  }
+  [data-recent='true'] {
+    box-shadow: inset 0 0 0 2px var(--color-live);
+  }
+}

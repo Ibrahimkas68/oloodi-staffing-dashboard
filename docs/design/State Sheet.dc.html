@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<script src="shiftboard-data.js"></script>
+<script src="image-slot.js"></script>
+<style>body{margin:0;background:#D9DAD4}a{color:#4A3A96;text-decoration:none;font-weight:500}a:hover{color:#141517}</style>
+</helmet>
+<div style="background:#D9DAD4;padding:48px;box-sizing:border-box;font-family:'Geist',system-ui,sans-serif;font-variant-numeric:tabular-nums;color:#141517;width:max-content;display:flex;flex-direction:column;gap:72px">
+  <header style="display:flex;justify-content:space-between;align-items:flex-end;gap:24px">
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <span style="font:500 13px 'Geist Mono',monospace;letter-spacing:0.08em;color:#4F5153">SHIFTBOARD · STATE SHEET</span>
+      <h1 style="margin:0;font-size:28px;font-weight:600;letter-spacing:-0.01em">Every state, not just the happy path</h1>
+    </div>
+    <nav style="display:flex;gap:20px;font-size:15px"><a href="Shiftboard.dc.html">← Live prototype</a><a href="Design%20System.dc.html">Design system →</a></nav>
+  </header>
+
+  <section data-screen-label="01 Connection badge" style="display:flex;flex-direction:column;gap:16px">
+    <h2 style="margin:0;font-size:20px;font-weight:600">1 · Connection badge</h2>
+    <div style="display:flex;gap:16px;align-items:center;padding:24px;background:#030405;border-radius:16px;width:max-content">
+      <div style="display:flex;align-items:center;gap:8px;height:38px;padding:0 16px;border-radius:999px;background:#16181A;border:1px solid #2A2C30;font-size:15px;white-space:nowrap">
+        <span style="position:relative;width:9px;height:9px;display:inline-flex"><span style="position:absolute;inset:0;border-radius:999px;background:#9DDA4F;opacity:0;animation:sbPulse 1.6s ease-out infinite"></span><span style="position:relative;width:9px;height:9px;border-radius:999px;background:#9DDA4F"></span></span>
+        <span style="font-weight:600;color:#9DDA4F">Live</span><span style="color:#A3A5A0">· synced 2s ago</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;height:38px;padding:0 16px;border-radius:999px;background:#16181A;border:1px solid #2A2C30;font-size:15px;white-space:nowrap">
+        <span style="width:10px;height:10px;border-radius:999px;border:1.5px solid #E8A93B;background:linear-gradient(90deg,#E8A93B 50%,transparent 50%);box-sizing:border-box"></span>
+        <span style="font-weight:600;color:#E8A93B">Reconnecting…</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;height:38px;padding:0 16px;border-radius:999px;background:#16181A;border:1px solid #2A2C30;font-size:15px;white-space:nowrap">
+        <span style="width:10px;height:10px;border-radius:999px;border:1.5px solid #A3A5A0;box-sizing:border-box"></span>
+        <span style="font-weight:600;color:#E8E9E4">Offline</span><span style="color:#A3A5A0">, data from 14:32</span>
+      </div>
+    </div>
+    <p style="margin:0;font-size:14px;color:#4F5153;max-width:720px">Filled dot (pulsing) · half-filled dot · hollow dot. The word always carries the meaning; shape backs it up for colour-blind viewers.</p>
+  </section>
+
+  <section data-screen-label="02 Offline banner" style="display:flex;flex-direction:column;gap:16px">
+    <h2 style="margin:0;font-size:20px;font-weight:600">2 · Offline banner, both screens</h2>
+    <div style="display:flex;gap:32px;align-items:flex-start">
+      <div style="width:720px;height:450px;overflow:hidden;border-radius:20px;flex-shrink:0"><div style="transform:scale(0.5);transform-origin:0 0;width:1440px;height:900px"><dc-import name="Dashboard" scenario="mid" connection="reconnecting" show-demo="{{ false }}" hint-size="1440px,900px"></dc-import></div></div>
+      <div style="width:246px;height:518px;overflow:hidden;flex-shrink:0"><div style="transform:scale(0.6);transform-origin:0 0;width:410px;height:864px"><dc-import name="WorkerView" variant="accepted" connection="reconnecting" hint-size="410px,864px"></dc-import></div></div>
+    </div>
+  </section>
+
+  <section data-screen-label="03 Buttons" style="display:flex;flex-direction:column;gap:16px">
+    <h2 style="margin:0;font-size:20px;font-weight:600">3 · Button states</h2>
+    <div style="display:grid;grid-template-columns:100px repeat(5,200px);gap:14px 16px;align-items:center;padding:24px;background:#F4F4F1;border-radius:16px;width:max-content">
+      <span></span><span style="font:500 12px 'Geist Mono',monospace;color:#4F5153">DEFAULT</span><span style="font:500 12px 'Geist Mono',monospace;color:#4F5153">HOVER</span><span style="font:500 12px 'Geist Mono',monospace;color:#4F5153">PRESSED</span><span style="font:500 12px 'Geist Mono',monospace;color:#4F5153">LOADING</span><span style="font:500 12px 'Geist Mono',monospace;color:#4F5153">DISABLED</span>
+
+      <span style="font-size:14px;color:#4F5153">Primary</span>
+      <button style="height:52px;border:0;border-radius:16px;background:#9DDA4F;color:#030405;font:600 16px 'Geist',sans-serif">Check in</button>
+      <button style="height:52px;border:0;border-radius:16px;background:#92CF44;color:#030405;font:600 16px 'Geist',sans-serif">Check in</button>
+      <button style="height:52px;border:0;border-radius:16px;background:#86C23A;color:#030405;font:600 16px 'Geist',sans-serif;transform:scale(0.98)">Check in</button>
+      <button disabled="{{ true }}" style="height:52px;border:0;border-radius:16px;background:#C3E59A;color:#030405;font:600 16px 'Geist',sans-serif;display:flex;align-items:center;justify-content:center;gap:10px"><span style="width:16px;height:16px;border-radius:999px;border:2px solid currentColor;border-top-color:transparent;box-sizing:border-box;animation:sbSpin 700ms linear infinite"></span>Checking in…</button>
+      <button disabled="{{ true }}" style="height:52px;border:0;border-radius:16px;background:#E5E6E1;color:#7A7C7E;font:600 16px 'Geist',sans-serif">Check in</button>
+
+      <span style="font-size:14px;color:#4F5153">Secondary</span>
+      <button style="height:52px;border:1.5px solid #141517;border-radius:16px;background:#FCFCFA;color:#141517;font:600 16px 'Geist',sans-serif">Decline</button>
+      <button style="height:52px;border:1.5px solid #141517;border-radius:16px;background:#ECECE8;color:#141517;font:600 16px 'Geist',sans-serif">Decline</button>
+      <button style="height:52px;border:1.5px solid #141517;border-radius:16px;background:#E2E3DE;color:#141517;font:600 16px 'Geist',sans-serif;transform:scale(0.98)">Decline</button>
+      <button disabled="{{ true }}" style="height:52px;border:1.5px solid #6B6D70;border-radius:16px;background:#FCFCFA;color:#45474A;font:600 16px 'Geist',sans-serif;display:flex;align-items:center;justify-content:center;gap:10px"><span style="width:16px;height:16px;border-radius:999px;border:2px solid currentColor;border-top-color:transparent;box-sizing:border-box;animation:sbSpin 700ms linear infinite"></span>Declining…</button>
+      <button disabled="{{ true }}" style="height:52px;border:1.5px solid #C9CBC6;border-radius:16px;background:transparent;color:#8A8C8E;font:600 16px 'Geist',sans-serif">Decline</button>
+
+      <span style="font-size:14px;color:#4F5153">Danger</span>
+      <button style="height:52px;border:0;border-radius:16px;background:#B3362A;color:#FFFFFF;font:600 16px 'Geist',sans-serif">Cancel my spot</button>
+      <button style="height:52px;border:0;border-radius:16px;background:#A02E23;color:#FFFFFF;font:600 16px 'Geist',sans-serif">Cancel my spot</button>
+      <button style="height:52px;border:0;border-radius:16px;background:#8E2A1C;color:#FFFFFF;font:600 16px 'Geist',sans-serif;transform:scale(0.98)">Cancel my spot</button>
+      <button disabled="{{ true }}" style="height:52px;border:0;border-radius:16px;background:#B3362A;color:#FFFFFF;opacity:0.7;font:600 16px 'Geist',sans-serif;display:flex;align-items:center;justify-content:center;gap:10px"><span style="width:16px;height:16px;border-radius:999px;border:2px solid currentColor;border-top-color:transparent;box-sizing:border-box;animation:sbSpin 700ms linear infinite"></span>Cancelling…</button>
+      <button disabled="{{ true }}" style="height:52px;border:0;border-radius:16px;background:#E5E6E1;color:#7A7C7E;font:600 16px 'Geist',sans-serif">Cancel my spot</button>
+
+      <span style="font-size:14px;color:#4F5153">Text</span>
+      <button style="height:48px;border:0;border-radius:16px;background:transparent;color:#8E2A1C;font:500 16px 'Geist',sans-serif">Cancel my spot</button>
+      <button style="height:48px;border:0;border-radius:16px;background:#F7DEDA;color:#8E2A1C;font:500 16px 'Geist',sans-serif">Cancel my spot</button>
+      <button style="height:48px;border:0;border-radius:16px;background:#F0CFC9;color:#8E2A1C;font:500 16px 'Geist',sans-serif;transform:scale(0.98)">Cancel my spot</button>
+      <button disabled="{{ true }}" style="height:48px;border:0;border-radius:16px;background:transparent;color:#8E2A1C;font:500 16px 'Geist',sans-serif;display:flex;align-items:center;justify-content:center;gap:10px"><span style="width:14px;height:14px;border-radius:999px;border:2px solid currentColor;border-top-color:transparent;box-sizing:border-box;animation:sbSpin 700ms linear infinite"></span>Cancelling…</button>
+      <button disabled="{{ true }}" style="height:48px;border:0;border-radius:16px;background:transparent;color:#A9ABA5;font:500 16px 'Geist',sans-serif">Cancel my spot</button>
+    </div>
+    <p style="margin:0;font-size:14px;color:#4F5153;max-width:820px">Loading keeps the button's width, swaps the label to the present tense and blocks repeat taps. Mobile buttons are 56px tall (min 52px).</p>
+  </section>
+
+  <section data-screen-label="04 Toasts" style="display:flex;flex-direction:column;gap:16px">
+    <h2 style="margin:0;font-size:20px;font-weight:600">4 · Toasts · desktop top-right, mobile bottom</h2>
+    <div style="display:flex;gap:32px;align-items:flex-start">
+      <div style="width:360px;display:flex;flex-direction:column;gap:8px;padding:20px;background:#F4F4F1;border-radius:16px">
+        <div style="display:grid;grid-template-columns:24px minmax(0,1fr);gap:12px;padding:12px 14px;background:#141517;color:#F4F4F1;border-radius:16px;box-shadow:0 8px 24px rgba(3,4,5,.24)"><span style="width:24px;height:24px;border-radius:999px;background:#63B33B;color:#0B1702;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700">✓</span><span style="font-size:15px;font-weight:600;padding-top:2px">Checked in at 14:02</span></div>
+        <div style="display:grid;grid-template-columns:24px minmax(0,1fr);gap:12px;padding:12px 14px;background:#141517;color:#F4F4F1;border-radius:16px;box-shadow:0 8px 24px rgba(3,4,5,.24)"><span style="width:24px;height:24px;border-radius:999px;background:#5A5C60;color:#F4F4F1;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700">i</span><div style="display:flex;flex-direction:column;gap:2px;padding-top:2px"><span style="font-size:15px;font-weight:600">Already checked in at 14:02</span><span style="font-size:13px;color:#B5B7B2">Not an error. Nothing changed.</span></div></div>
+        <div style="display:grid;grid-template-columns:24px minmax(0,1fr);gap:12px;padding:12px 14px;background:#141517;color:#F4F4F1;border-radius:16px;box-shadow:0 8px 24px rgba(3,4,5,.24)"><span style="width:24px;height:24px;border-radius:999px;background:#E8A93B;color:#1F1300;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700">!</span><span style="font-size:15px;font-weight:600;padding-top:2px;line-height:1.35">Salma already checked out, so she can't check in again</span></div>
+        <div style="display:grid;grid-template-columns:24px minmax(0,1fr);gap:12px;padding:12px 14px;background:#141517;color:#F4F4F1;border-radius:16px;box-shadow:0 8px 24px rgba(3,4,5,.24)"><span style="width:24px;height:24px;border-radius:999px;background:#E36A5C;color:#1F0703;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700">!</span><span style="font-size:15px;font-weight:600;padding-top:2px;line-height:1.35">Couldn't reach the server. Nothing was saved. Try again.</span></div>
+        <div style="display:flex;flex-direction:column;gap:4px;margin-top:8px;font:500 12px 'Geist Mono',monospace;color:#4F5153"><span>✓ success · i neutral · ! conflict (amber) · ! network (red)</span><span>Newest on top · max 4 · auto-dismiss 4.5s</span></div>
+      </div>
+      <div style="width:246px;height:518px;overflow:hidden;flex-shrink:0"><div style="transform:scale(0.6);transform-origin:0 0;width:410px;height:864px"><dc-import name="WorkerView" variant="checked_in" toasts="{{ mobileToasts }}" hint-size="410px,864px"></dc-import></div></div>
+    </div>
+  </section>
+
+  <section data-screen-label="05 Worker notice" style="display:flex;flex-direction:column;gap:16px">
+    <h2 style="margin:0;font-size:20px;font-weight:600">5 · Worker start screen, notice, and every worker state</h2>
+    <p style="margin:0;font-size:14px;color:#4F5153;max-width:820px">Only the actions allowed right now are shown. First frame: the manager changed this record from another session.</p>
+    <div style="display:grid;grid-template-columns:repeat(5,max-content);gap:28px">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:20px 20px 24px;background:#F4F4F1;border-radius:28px;box-shadow:0 1px 0 rgba(3,4,5,.04),0 12px 32px rgba(3,4,5,.08)"><span style="align-self:stretch;display:flex;align-items:center;justify-content:center;height:30px;border-radius:999px;background:#E5E6E1;font:500 12px 'Geist Mono',monospace;letter-spacing:0.04em;color:#26282B">START · PICK YOUR NAME</span><div style="width:246px;height:518px;overflow:hidden"><div style="transform:scale(0.6);transform-origin:0 0;width:410px;height:864px"><dc-import name="WorkerView" force-picker="{{ true }}" sessions="{{ pickSessions }}" hint-size="410px,864px"></dc-import></div></div></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:20px 20px 24px;background:#F4F4F1;border-radius:28px;box-shadow:0 1px 0 rgba(3,4,5,.04),0 12px 32px rgba(3,4,5,.08)"><span style="align-self:stretch;display:flex;align-items:center;justify-content:center;height:30px;border-radius:999px;background:#E5E6E1;font:500 12px 'Geist Mono',monospace;letter-spacing:0.04em;color:#26282B">START · SESSION ALREADY OPEN</span><div style="width:246px;height:518px;overflow:hidden"><div style="transform:scale(0.6);transform-origin:0 0;width:410px;height:864px"><dc-import name="WorkerView" force-picker="{{ true }}" sessions="{{ pickSessions }}" pick-error="amina" hint-size="410px,864px"></dc-import></div></div></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:20px 20px 24px;background:#F4F4F1;border-radius:28px;box-shadow:0 1px 0 rgba(3,4,5,.04),0 12px 32px rgba(3,4,5,.08)"><span style="align-self:stretch;display:flex;align-items:center;justify-content:center;height:30px;border-radius:999px;background:#E5E6E1;font:500 12px 'Geist Mono',monospace;letter-spacing:0.04em;color:#26282B">INVITED + NOTICE</span><div style="width:246px;height:518px;overflow:hidden"><div style="transform:scale(0.6);transform-origin:0 0;width:410px;height:864px"><dc-import name="WorkerView" variant="invited" notice="{{ true }}" hint-size="410px,864px"></dc-import></div></div></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:20px 20px 24px;background:#F4F4F1;border-radius:28px;box-shadow:0 1px 0 rgba(3,4,5,.04),0 12px 32px rgba(3,4,5,.08)"><span style="align-self:stretch;display:flex;align-items:center;justify-content:center;height:30px;border-radius:999px;background:#E5E6E1;font:500 12px 'Geist Mono',monospace;letter-spacing:0.04em;color:#26282B">UNINVITED</span><div style="width:246px;height:518px;overflow:hidden"><div style="transform:scale(0.6);transform-origin:0 0;width:410px;height:864px"><dc-import name="WorkerView" variant="uninvited" hint-size="410px,864px"></dc-import></div></div></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:20px 20px 24px;background:#F4F4F1;border-radius:28px;box-shadow:0 1px 0 rgba(3,4,5,.04),0 12px 32px rgba(3,4,5,.08)"><span style="align-self:stretch;display:flex;align-items:center;justify-content:center;height:30px;border-radius:999px;background:#E5E6E1;font:500 12px 'Geist Mono',monospace;letter-spacing:0.04em;color:#26282B">ACCEPTED · NOT STARTED</span><div style="width:246px;height:518px;overflow:hidden"><div style="transform:scale(0.6);transform-origin:0 0;width:410px;height:864px"><dc-import name="WorkerView" variant="accepted" hint-size="410px,864px"></dc-import></div></div></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:20px 20px 24px;background:#F4F4F1;border-radius:28px;box-shadow:0 1px 0 rgba(3,4,5,.04),0 12px 32px rgba(3,4,5,.08)"><span style="align-self:stretch;display:flex;align-items:center;justify-content:center;height:30px;border-radius:999px;background:#E5E6E1;font:500 12px 'Geist Mono',monospace;letter-spacing:0.04em;color:#26282B">CHECKED IN</span><div style="width:246px;height:518px;overflow:hidden"><div style="transform:scale(0.6);transform-origin:0 0;width:410px;height:864px"><dc-import name="WorkerView" variant="checked_in" hint-size="410px,864px"></dc-import></div></div></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:20px 20px 24px;background:#F4F4F1;border-radius:28px;box-shadow:0 1px 0 rgba(3,4,5,.04),0 12px 32px rgba(3,4,5,.08)"><span style="align-self:stretch;display:flex;align-items:center;justify-content:center;height:30px;border-radius:999px;background:#E5E6E1;font:500 12px 'Geist Mono',monospace;letter-spacing:0.04em;color:#26282B">CANCELLED</span><div style="width:246px;height:518px;overflow:hidden"><div style="transform:scale(0.6);transform-origin:0 0;width:410px;height:864px"><dc-import name="WorkerView" variant="cancelled" hint-size="410px,864px"></dc-import></div></div></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:20px 20px 24px;background:#F4F4F1;border-radius:28px;box-shadow:0 1px 0 rgba(3,4,5,.04),0 12px 32px rgba(3,4,5,.08)"><span style="align-self:stretch;display:flex;align-items:center;justify-content:center;height:30px;border-radius:999px;background:#E5E6E1;font:500 12px 'Geist Mono',monospace;letter-spacing:0.04em;color:#26282B">DECLINED</span><div style="width:246px;height:518px;overflow:hidden"><div style="transform:scale(0.6);transform-origin:0 0;width:410px;height:864px"><dc-import name="WorkerView" variant="declined" hint-size="410px,864px"></dc-import></div></div></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:20px 20px 24px;background:#F4F4F1;border-radius:28px;box-shadow:0 1px 0 rgba(3,4,5,.04),0 12px 32px rgba(3,4,5,.08)"><span style="align-self:stretch;display:flex;align-items:center;justify-content:center;height:30px;border-radius:999px;background:#E5E6E1;font:500 12px 'Geist Mono',monospace;letter-spacing:0.04em;color:#26282B">CHECKED OUT</span><div style="width:246px;height:518px;overflow:hidden"><div style="transform:scale(0.6);transform-origin:0 0;width:410px;height:864px"><dc-import name="WorkerView" variant="checked_out" hint-size="410px,864px"></dc-import></div></div></div>
+    </div>
+  </section>
+
+  <section data-screen-label="06 Dashboard moments" style="display:flex;flex-direction:column;gap:16px">
+    <h2 style="margin:0;font-size:20px;font-weight:600">6 · Manager dashboard at three moments</h2>
+    <div style="display:flex;gap:24px;align-items:flex-start">
+      <div style="display:flex;flex-direction:column;gap:16px;padding:20px;background:#F4F4F1;border-radius:28px;box-shadow:0 1px 0 rgba(3,4,5,.04),0 12px 32px rgba(3,4,5,.08)"><span style="align-self:flex-start;display:flex;align-items:center;height:30px;padding:0 14px;border-radius:999px;background:#E5E6E1;font:500 12px 'Geist Mono',monospace;letter-spacing:0.04em;color:#26282B">11:00 · ALL UNINVITED · FILLED 0/3</span><div style="width:720px;height:450px;overflow:hidden;border-radius:20px"><div style="transform:scale(0.5);transform-origin:0 0;width:1440px;height:900px"><dc-import name="Dashboard" scenario="empty" show-demo="{{ false }}" hint-size="1440px,900px"></dc-import></div></div></div>
+      <div style="display:flex;flex-direction:column;gap:16px;padding:20px;background:#F4F4F1;border-radius:28px;box-shadow:0 1px 0 rgba(3,4,5,.04),0 12px 32px rgba(3,4,5,.08)"><span style="align-self:flex-start;display:flex;align-items:center;height:30px;padding:0 14px;border-radius:999px;background:#E5E6E1;font:500 12px 'Geist Mono',monospace;letter-spacing:0.04em;color:#26282B">14:32 · MID-SHIFT (SEED) · FILLED 2/3</span><div style="width:720px;height:450px;overflow:hidden;border-radius:20px"><div style="transform:scale(0.5);transform-origin:0 0;width:1440px;height:900px"><dc-import name="Dashboard" scenario="mid" show-demo="{{ false }}" hint-size="1440px,900px"></dc-import></div></div></div>
+      <div style="display:flex;flex-direction:column;gap:16px;padding:20px;background:#F4F4F1;border-radius:28px;box-shadow:0 1px 0 rgba(3,4,5,.04),0 12px 32px rgba(3,4,5,.08)"><span style="align-self:flex-start;display:flex;align-items:center;height:30px;padding:0 14px;border-radius:999px;background:#E5E6E1;font:500 12px 'Geist Mono',monospace;letter-spacing:0.04em;color:#26282B">20:04 · END OF SHIFT · FILLED STILL 3/3</span><div style="width:720px;height:450px;overflow:hidden;border-radius:20px"><div style="transform:scale(0.5);transform-origin:0 0;width:1440px;height:900px"><dc-import name="Dashboard" scenario="end" show-demo="{{ false }}" hint-size="1440px,900px"></dc-import></div></div></div>
+    </div>
+  </section>
+
+  <section data-screen-label="07 KPI change" style="display:flex;flex-direction:column;gap:16px">
+    <h2 style="margin:0;font-size:20px;font-weight:600">7 · KPI value changing · digit pop-in, 200ms</h2>
+    <div style="display:flex;gap:16px;align-items:flex-end">
+      <div style="display:flex;flex-direction:column;gap:8px"><span style="font:500 12px 'Geist Mono',monospace;color:#4F5153">BEFORE · t = 0</span>
+        <div style="width:240px;background:#FCFCFA;border:1px solid #E2E3DE;border-radius:16px;padding:16px 20px 18px;display:flex;flex-direction:column;gap:10px;box-sizing:border-box"><span style="font-size:16px;font-weight:500;color:#4F5153">Checked in now</span><div style="font-size:64px;line-height:1;font-weight:600;letter-spacing:-0.03em">1</div><span style="font-size:14px;color:#4F5153">on site right now</span></div></div>
+      <div style="display:flex;flex-direction:column;gap:8px"><span style="font:500 12px 'Geist Mono',monospace;color:#4F5153">MID · t = 100ms</span>
+        <div style="width:240px;background:#FCFCFA;border:1px solid #E2E3DE;border-radius:16px;padding:16px 20px 18px;display:flex;flex-direction:column;gap:10px;box-sizing:border-box"><span style="font-size:16px;font-weight:500;color:#4F5153">Checked in now</span><div style="font-size:64px;line-height:1;font-weight:600;letter-spacing:-0.03em"><span style="display:inline-block;opacity:0.5;transform:translateY(5px) scale(0.97)">2</span></div><span style="font-size:14px;color:#4F5153">on site right now</span></div></div>
+      <div style="display:flex;flex-direction:column;gap:8px"><span style="font:500 12px 'Geist Mono',monospace;color:#4F5153">AFTER · t = 200ms</span>
+        <div style="width:240px;background:#FCFCFA;border:1px solid #E2E3DE;border-radius:16px;padding:16px 20px 18px;display:flex;flex-direction:column;gap:10px;box-sizing:border-box"><span style="font-size:16px;font-weight:500;color:#4F5153">Checked in now</span><div style="font-size:64px;line-height:1;font-weight:600;letter-spacing:-0.03em">2</div><span style="font-size:14px;color:#4F5153">on site right now</span></div></div>
+      <div style="display:flex;flex-direction:column;gap:6px;max-width:300px;padding:0 0 8px 16px;font-size:14px;line-height:1.45;color:#4F5153">
+        <span style="font:500 12px 'Geist Mono',monospace;color:#141517">opacity 0→1 · translateY 10px→0 · scale .94→1</span>
+        <span>200ms, cubic-bezier(.2,.8,.2,1). Only the changed number animates; label and card stay still.</span>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="08 Motion notes" style="display:flex;flex-direction:column;gap:16px">
+    <h2 style="margin:0;font-size:20px;font-weight:600">Motion annotations</h2>
+    <div style="display:grid;grid-template-columns:220px 120px 420px 360px;background:#F4F4F1;border-radius:16px;overflow:hidden;font-size:15px;width:max-content">
+      <span style="padding:12px 16px;font:500 12px 'Geist Mono',monospace;color:#4F5153;background:#E5E6E1">ELEMENT</span><span style="padding:12px 16px;font:500 12px 'Geist Mono',monospace;color:#4F5153;background:#E5E6E1">DURATION</span><span style="padding:12px 16px;font:500 12px 'Geist Mono',monospace;color:#4F5153;background:#E5E6E1">WHAT MOVES</span><span style="padding:12px 16px;font:500 12px 'Geist Mono',monospace;color:#4F5153;background:#E5E6E1">REDUCED MOTION</span>
+      <span style="padding:12px 16px;font-weight:600">KPI number</span><span style="padding:12px 16px">200ms</span><span style="padding:12px 16px">Digit pops in: opacity + translateY + scale</span><span style="padding:12px 16px;color:#4F5153">Value swaps instantly</span>
+      <span style="padding:12px 16px;font-weight:600;border-top:1px solid #E5E6E1">Timeline item</span><span style="padding:12px 16px;border-top:1px solid #E5E6E1">180ms</span><span style="padding:12px 16px;border-top:1px solid #E5E6E1">New item slides down from the top (translateY −10px→0)</span><span style="padding:12px 16px;color:#4F5153;border-top:1px solid #E5E6E1">Appears in place</span>
+      <span style="padding:12px 16px;font-weight:600;border-top:1px solid #E5E6E1">Worker actions</span><span style="padding:12px 16px;border-top:1px solid #E5E6E1">160ms</span><span style="padding:12px 16px;border-top:1px solid #E5E6E1">Cross-fade when the allowed action changes</span><span style="padding:12px 16px;color:#4F5153;border-top:1px solid #E5E6E1">Instant swap</span>
+      <span style="padding:12px 16px;font-weight:600;border-top:1px solid #E5E6E1">Changed table row</span><span style="padding:12px 16px;border-top:1px solid #E5E6E1">1000ms</span><span style="padding:12px 16px;border-top:1px solid #E5E6E1">Lime overlay fades out (opacity 1→0, ease-out)</span><span style="padding:12px 16px;color:#4F5153;border-top:1px solid #E5E6E1">Static 2px lime border on the last changed row</span>
+      <span style="padding:12px 16px;font-weight:600;border-top:1px solid #E5E6E1">Toast</span><span style="padding:12px 16px;border-top:1px solid #E5E6E1">180ms</span><span style="padding:12px 16px;border-top:1px solid #E5E6E1">Fade + 8px slide from its edge</span><span style="padding:12px 16px;color:#4F5153;border-top:1px solid #E5E6E1">Appears in place</span>
+    </div>
+    <p style="margin:0;font-size:14px;color:#4F5153">Only opacity and transform animate. The live dot pulse is the one looping motion.</p>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      pickSessions: ['amina'],
+      mobileToasts: [
+        { id: 't4', kind: 'network', title: "Couldn't reach the server. Nothing was saved. Try again." },
+        { id: 't3', kind: 'conflict', title: "Salma already checked out, so she can't check in again" },
+        { id: 't2', kind: 'neutral', title: 'Already checked in at 14:02' },
+        { id: 't1', kind: 'success', title: 'Checked in at 14:02' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
