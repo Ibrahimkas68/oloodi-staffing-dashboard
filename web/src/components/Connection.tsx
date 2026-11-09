@@ -8,11 +8,12 @@ const SYNC_LABEL_REFRESH_MS = 1_000;
  * C1 connection badge: filled pulsing dot (Live), half-filled dot (Reconnecting), hollow dot
  * (Offline). The word carries the meaning; the shape backs it up for colour-blind viewers.
  */
-export function ConnectionBadge({ compact = false }: { compact?: boolean }) {
+export function ConnectionBadge({ size = 'default' }: { size?: 'default' | 'phone' }) {
   const { status, lastSyncedAt } = useLive();
   const now = useNow(SYNC_LABEL_REFRESH_MS);
-  const size = compact ? 'h-7 px-[11px] text-[13px] gap-1.5' : 'h-[38px] px-4 text-[15px] gap-2';
-  const dot = compact ? 'size-2' : 'size-[9px]';
+  // "phone" is the small badge of the worker header, and grows to the default from `md` up.
+  const box = size === 'phone' ? 'h-7 gap-1.5 px-[11px] text-[13px] md:h-[38px] md:gap-2 md:px-4 md:text-[15px]' : 'h-[38px] gap-2 px-4 text-[15px]';
+  const dot = size === 'phone' ? 'size-2 md:size-[9px]' : 'size-[9px]';
 
   let content;
   if (status === 'live') {
@@ -54,29 +55,50 @@ export function ConnectionBadge({ compact = false }: { compact?: boolean }) {
       data-testid="connection-status"
       data-status={status}
       role="status"
-      className={`flex shrink-0 items-center whitespace-nowrap rounded-pill border border-shell-line bg-shell-raised ${size}`}
+      className={`flex shrink-0 items-center whitespace-nowrap rounded-pill border border-shell-line bg-shell-raised ${box}`}
     >
       {content}
     </div>
   );
 }
 
-/** Shown on every screen while live updates are down. */
-export function OfflineBanner({ layout = 'desktop' }: { layout?: 'desktop' | 'mobile' }) {
+type BannerLayout = 'desktop' | 'mobile' | 'adaptive';
+
+/**
+ * Banner shapes: a rounded strip on the desktop shell, a full-width band on phones, and
+ * "adaptive" for pages that serve both (a band under the header, a strip above it from `md`).
+ */
+const BANNER_SHAPE: Record<BannerLayout, { box: string; dot: string }> = {
+  desktop: { box: 'mb-1 min-h-11 items-center rounded-[14px] px-4 text-[15px]', dot: '' },
+  mobile: { box: 'items-start px-4 py-3 text-sm leading-[1.4]', dot: 'mt-[3px]' },
+  adaptive: {
+    box: 'order-2 items-start px-4 py-3 text-sm leading-[1.4] md:order-1 md:mb-1 md:min-h-11 md:items-center md:rounded-[14px] md:py-0 md:text-[15px]',
+    dot: 'mt-[3px] md:mt-0',
+  },
+};
+
+/**
+ * Shown on every screen while live updates are down. The status region stays in the page (it takes
+ * no space) so the banner is announced when it appears.
+ */
+export function OfflineBanner({ layout = 'desktop' }: { layout?: BannerLayout }) {
   const { status } = useLive();
-  if (status === 'live' || status === 'connecting') return null;
-  const shape =
-    layout === 'desktop' ? 'mb-1 min-h-11 rounded-[14px] items-center px-4 text-[15px]' : 'items-start px-4 py-3 text-sm leading-[1.4]';
+  const paused = status !== 'live' && status !== 'connecting';
+  const shape = BANNER_SHAPE[layout];
   return (
-    <div role="status" className={`flex gap-3 bg-banner text-banner-fg animate-fade ${shape}`}>
-      <span
-        aria-hidden="true"
-        className="mt-[3px] size-3 shrink-0 rounded-pill border-2 border-banner-dot bg-[linear-gradient(90deg,var(--color-banner-dot)_50%,transparent_50%)] sm:mt-0"
-      />
-      <span>
-        <strong className="font-semibold">Live updates paused. Reconnecting…</strong> Actions may fail until
-        we're back.
-      </span>
+    <div role="status" className="contents">
+      {paused && (
+        <div className={`flex gap-3 bg-banner text-banner-fg animate-fade ${shape.box}`}>
+          <span
+            aria-hidden="true"
+            className={`size-3 shrink-0 rounded-pill border-2 border-banner-dot bg-[linear-gradient(90deg,var(--color-banner-dot)_50%,transparent_50%)] ${shape.dot}`}
+          />
+          <span>
+            <strong className="font-semibold">Live updates paused. Reconnecting…</strong> Actions may fail until
+            we're back.
+          </span>
+        </div>
+      )}
     </div>
   );
 }

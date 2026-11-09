@@ -79,6 +79,31 @@ covers it.
   three Invite buttons; clicking Invite showed "Inviting…" (disabled), then "✓ Invite sent to
   Youssef"; an accept sent with curl updated the row, Filled 1/3 and the bar without reload.
 
+### 2026-11-09 · US2 worker view (T048 to T053) · analyser, architect and reviewer agents + Claude
+- **Asked:** the worker picks a name, sees the shift and both statuses, and can accept, decline,
+  cancel and accept again, with only the allowed buttons shown. Workflow: analyser writes a brief,
+  architect implements, reviewer checks the diff, I test in the browser.
+- **Produced:** `respond.test.ts` and `shift-full.test.ts`; `workerParam.ts` (the `?worker=` id and
+  history handling); `workerView.ts` (pure: which buttons and message for a state, built from the
+  shared transition table); `WorkerSelector`, `WorkerStatus`, `ShiftCard`, `WorkerActions`, the
+  worker page; web unit tests for `workerView` and `workerParam`.
+- **Changed or rejected:** left out the design's "one worker, one session" lock and "Signed in as"
+  (see `docs/design/README.md`). Check in and Check out buttons come with US2 because an accepted
+  worker would otherwise have nowhere to go; US3 only adds its tests. `?worker=` holds the worker
+  id, not the assignment id, with a unit test that uses different ids (in the seed they match, so
+  a mix-up would pass every other test). No default worker: no param shows the picker.
+- **Reviewer findings fixed:** a loading button now uses `aria-disabled` (a keyboard user keeps
+  focus if the request fails), screen readers no longer hear every change twice, a bad `?worker=`
+  no longer steals focus, focus goes to the heading instead of the whole page, the declined message
+  has no check icon, `workerView` takes one argument, hex colours became tokens, the status rows
+  grow with large text, the dependency line in tasks.md was restored.
+- **Left for later:** cancel after check-in (409) gets its API test with US3; no component or
+  browser tests yet (Playwright arrives with T059).
+- **Verified:** typecheck, lint, 128 tests (52 shared, 41 server, 35 web), build. Browser at 375 px:
+  picker, deep links, bad ids removed from the URL, invite arriving live, accept, cancel, accept
+  again, repeat accept (`changed:false`), Switch and Back, focus on the heading after a pick, the
+  loading button keeps focus.
+
 ### 2026-11-09 · US1 fixes · analyser, architect and reviewer agents + Claude
 - **Asked:** fix the weak spots I listed in my own US1 code, through three agents: an analyser to
   find issues, an architect to implement, a reviewer to check the diff.
@@ -104,3 +129,25 @@ covers it.
   exactly two invites (version 2, two success toasts, no "already" toast), focus moved to the name
   cell, 8 columns with the name taking the spare width, an outside accept highlighted the whole
   row. At 375 px: name and Invite stay sticky and on top while the middle scrolls.
+
+### 2026-11-09 · US2 design pass: avatar picker, notice, desktop layout · Claude + reviewer agent
+- **Asked:** make the worker view match the Claude Design State Sheet, use the supplied avatar
+  images, and give non-phone screens a polished layout that keeps the mobile controls.
+- **Produced:** the name picker as a tile grid (cut-out portrait on a gradient, initials badge, name
+  pill, status line), avatars cropped and resized to 512 px WebP (about 29 KB each instead of 1 MB+
+  PNGs) and matched by first name with an initials fallback; the "Updated from another session"
+  notice, driven by a live-store flag that tells stream snapshots from this tab's own responses; the
+  4 px tighter "Cancel my spot"; a responsive worker page (phone column below `md`, the dashboard's
+  dark shell and rounded panel from `md`, side navigation from `lg`, two columns on the worker
+  screen); `SideNav` shared with the manager page.
+- **Changed or rejected:** the reviewer found no breakage but flagged live regions inserted already
+  filled in (now persistent, content toggled), lost focus when another session removes the focused
+  button (now a focus-recovery effect, not only after own taps), a header overlap at 768 px (pill
+  shrinks below `lg`), an unnamed focus target (now a labelled group), and an over-optimistic
+  comment on the local-request window (rewritten). Not changed: reading order of "Recorded times"
+  on phones (visual order follows the design).
+- **Still deliberately different from the design:** the "In use" session lock and "Signed in as"
+  (see docs/design/README.md). The offline banner stays visible on the picker, where the design
+  hides all connection chrome.
+- **Verified:** typecheck, lint, tests (47 web), build. Browser at 390, 768, 820 and 1440 px: picker,
+  worker screen, offline banner, notice appearing on an outside invite and clearing on own Accept.

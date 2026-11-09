@@ -126,15 +126,17 @@ actions, tests and screens.
 
 ### Tests for User Story 2
 
-- [ ] T048 [P] [US2] API test in `server/tests/api/respond.test.ts`: accept invited → accepted, `respondedAt` set, filled +1; decline invited → declined; decline then accept → 409; cancel accepted+not_started → cancelled, `cancelledAt` set; accept cancelled → accepted again; accept uninvited → 409; repeated accept → `changed:false` with the same `respondedAt`
-- [ ] T049 [P] [US2] API test in `server/tests/api/shift-full.test.ts`: with `required_workers` set to 1 in the test DB, a second worker's accept → 409 `SHIFT_FULL` with `filled` and `required`; the first worker's repeated accept still → 200 `changed:false`
+- [x] T048 [P] [US2] API test in `server/tests/api/respond.test.ts`: accept invited → accepted, `respondedAt` set, filled +1; decline invited → declined; decline then accept → 409; cancel accepted+not_started → cancelled, `cancelledAt` set; accept cancelled → accepted again; accept uninvited → 409; repeated accept → `changed:false` with the same `respondedAt`
+- [x] T049 [P] [US2] API test in `server/tests/api/shift-full.test.ts`: with `required_workers` set to 1 in the test DB, a second worker's accept → 409 `SHIFT_FULL` with `filled` and `required`; the first worker's repeated accept still → 200 `changed:false`
 
 ### Implementation for User Story 2
 
-- [ ] T050 [P] [US2] Implement `web/src/components/WorkerSelector.tsx` (initials avatars, keeps the choice in the `worker` query parameter)
-- [ ] T051 [P] [US2] Implement `web/src/components/WorkerStatus.tsx`: "Participation: X" and "Attendance: Y" lines using the pill and chip, plus recorded times
-- [ ] T052 [US2] Implement `web/src/components/WorkerActions.tsx` driven by `shared/src/transitions.ts` allowed actions: Invited → Accept + Decline; Accepted + Not started → Check in + text button "Cancel my spot"; Cancelled → "Accept again"; Uninvited → "No invitation yet"; Declined → final message; full-width buttons min height 52 px
-- [ ] T053 [US2] Implement `web/src/pages/Worker.tsx` composing selector, shift card, status, actions from `useLive()`
+- [x] T050 [P] [US2] Implement `web/src/components/WorkerSelector.tsx` (initials avatars, keeps the choice in the `worker` query parameter) and `web/src/lib/workerParam.ts` (parse, select, clear, find the assignment by worker id; the parameter holds the worker id, not the assignment id)
+  - Unit test `web/tests/workerParam.test.ts`: invalid values (`abc`, `0`, `-1`, `1.5`, `01`, empty, huge), repeated parameter, valid value; assignment lookup by worker id
+  - Unit test `web/tests/workerView.test.ts`: allowed worker actions, order and messages for each of the 7 valid states
+- [x] T051 [P] [US2] Implement `web/src/components/WorkerStatus.tsx`: "Participation: X" and "Attendance: Y" lines using the pill and chip, plus the recorded times (invited, accepted/declined/cancelled, checked in, checked out; empty ones omitted)
+- [x] T052 [US2] Implement `web/src/components/WorkerActions.tsx` driven by `shared/src/transitions.ts` allowed actions: Invited → Accept + Decline; Accepted + Not started → Check in + text button "Cancel my spot"; Cancelled → "Accept again"; Uninvited → "No invitation yet"; Declined → final message; full-width buttons: primary and secondary 56 px, text button 48 px, all at least 44 px touch targets
+- [x] T053 [US2] Implement `web/src/pages/Worker.tsx` composing selector, shift card, status, actions from `useLive()`
 
 **Checkpoint**: US1 and US2 work together and independently.
 
@@ -152,8 +154,8 @@ actions, tests and screens.
 
 ### Implementation for User Story 3
 
-- [ ] T055 [US3] Extend `web/src/components/WorkerActions.tsx`: Checked in → "Check out"; Checked out → final message "You checked out at HH:MM. Thanks!" with no buttons
-- [ ] T056 [US3] Show "Checked in at HH:MM" and "Checked out at HH:MM" lines in `web/src/components/WorkerStatus.tsx`
+- [ ] T055 [US3] Extend `web/src/components/WorkerActions.tsx` with the Checked in → "Check out" button and the Checked out final message "You checked out at HH:MM. Thanks!" with no buttons (Check in and Cancel exist since T052)
+- [ ] T056 [US3] Verify that the "Checked in at HH:MM" and "Checked out at HH:MM" rows already built in `web/src/components/WorkerStatus.tsx` (T051) appear after check-in and check-out; no new code expected
 
 **Checkpoint**: Full happy path invite → accept → check in → check out works across two windows.
 
@@ -208,7 +210,7 @@ actions, tests and screens.
 - [ ] T072 [P] [US6] Implement `web/src/components/ActivityTimeline.tsx` (C4) from `snapshot.recentEvents`, newest first, "HH:MM Amina checked in"; copy the beUI Timeline component and read it before committing
 - [ ] T073 [P] [US6] Implement `web/src/components/ReadinessLine.tsx` (C5): plain sentence such as "2 of 3 places filled · starts in 3h · Salma accepted, not checked in yet"; "Shift complete" when everyone accepted has checked out
 - [ ] T074 [P] [US6] Make the worker view mobile-first (C6) in `web/src/pages/Worker.tsx` and verify at 390 px width
-- [ ] T075 [P] [US6] Implement deep links (C8): `/worker?worker=<id>` preselects the worker, unknown ids fall back to the selector; "copy worker link" icon in each `WorkerTable` row
+- [ ] T075 [P] [US6] Finish deep links (C8): preselecting a worker and the fallback for unknown ids are built in T050 and T053; add the "copy worker link" icon in each `WorkerTable` row (the link uses the worker id, `/worker?worker=<worker id>`) and test the clipboard fallback
 - [ ] T076 [US6] Add Motion only through the copied beUI components (Toast Stack, Action Swap, Collapsible, Alert) and the KPI number pop-in; animate only opacity and transform; respect `prefers-reduced-motion`
 
 ---

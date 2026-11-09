@@ -3,7 +3,7 @@ import type { Action, Snapshot } from '@staffing/shared';
 import { useToast } from '../components/Toasts.js';
 import { postAction } from './api.js';
 import { firstName, formatTime } from './format.js';
-import { applySnapshot } from './live.js';
+import { applyOwnSnapshot, trackLocalRequest } from './live.js';
 
 /** The worker row an action applies to, and the first name to use in toasts. */
 function describeAssignment(snapshot: Snapshot, assignmentId: number) {
@@ -72,10 +72,10 @@ export function useAction() {
       inFlightRef.current.add(key);
       setInFlight(new Set(inFlightRef.current));
       try {
-        const outcome = await postAction(assignmentId, action);
+        const outcome = await trackLocalRequest(postAction(assignmentId, action));
         if (outcome.ok) {
           const { changed, snapshot } = outcome.result;
-          applySnapshot(snapshot);
+          applyOwnSnapshot(snapshot);
           if (changed) toast('success', successTitle(action, snapshot, assignmentId));
           else toast('neutral', alreadyTitle(action, snapshot, assignmentId), 'Not an error. Nothing changed.');
         } else if (outcome.kind === 'refused') {

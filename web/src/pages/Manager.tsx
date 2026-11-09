@@ -1,6 +1,6 @@
-import { Brand } from '../components/Brand.js';
 import { ConnectionBadge, OfflineBanner } from '../components/Connection.js';
 import { KpiRow } from '../components/KpiRow.js';
+import { SideNav } from '../components/SideNav.js';
 import { ShiftHeader } from '../components/ShiftHeader.js';
 import { WorkerTable } from '../components/WorkerTable.js';
 import { useLive } from '../lib/live.js';
@@ -28,19 +28,7 @@ export function ManagerPage() {
 
   return (
     <div className="flex min-h-screen text-shell-text">
-      <nav className="hidden w-[180px] shrink-0 flex-col gap-8 px-3.5 py-7 lg:flex" aria-label="Views">
-        <div className="px-2.5">
-          <Brand />
-        </div>
-        <div className="flex flex-col gap-1 text-[15px]">
-          <a href="/" aria-current="page" className="flex h-10 items-center rounded-sm bg-shell-hover px-3 font-medium">
-            Dashboard
-          </a>
-          <a href="/worker" className="flex h-10 items-center rounded-sm px-3 text-shell-mid hover:text-shell-text">
-            Worker view
-          </a>
-        </div>
-      </nav>
+      <SideNav current="dashboard" />
 
       <div className="flex min-w-0 flex-1 flex-col p-3 lg:pl-0">
         <OfflineBanner />

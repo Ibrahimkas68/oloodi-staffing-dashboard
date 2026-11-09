@@ -10,6 +10,12 @@ export type LiveState = {
   lastSyncedAt: number | null;
   /** Time spent reconnecting before the last successful catch-up, for the metrics panel. */
   lastRecoveryMs: number | null;
+  /**
+   * Version of the newest snapshot that came from another session: it arrived on the stream while
+   * this tab had no request of its own in flight. The worker view uses it to say "Updated from
+   * another session".
+   */
+  remoteVersion: number | null;
 };
 
 export const WATCHDOG_MS = 35_000;
@@ -34,7 +40,7 @@ export function backoffDelay(attempt: number): number {
   return Math.min(1_000 * 2 ** attempt, 10_000);
 }
 
-let state: LiveState = { status: 'connecting', snapshot: null, lastSyncedAt: null, lastRecoveryMs: null };
+let state: LiveState = { status: 'connecting', snapshot: null, lastSyncedAt: null, lastRecoveryMs: null, remoteVersion: null };
 const listeners = new Set<() => void>();
 
 function setState(patch: Partial<LiveState>) {
@@ -42,9 +48,41 @@ function setState(patch: Partial<LiveState>) {
   listeners.forEach((listener) => listener());
 }
 
-/** Applies a snapshot from the stream or from an HTTP response, through the same version guard. */
+/** Requests this tab has sent and not yet answered. */
+let localRequests = 0;
+
+/**
+ * Marks a request as this tab's own while it runs. The server broadcasts the result on the stream
+ * as well, and that echo can beat the HTTP response, so a stream snapshot that lands meanwhile is
+ * not reported as coming from another session. A change made elsewhere while a request is open
+ * (normally well under a second, up to the retry budget of about 25 s on a bad network) goes
+ * unannounced, and a request that failed after the server saved it can be announced by the
+ * catch-up snapshot after a reconnect. Both are rare and harmless: the screen is correct either
+ * way, only the notice may be missing or extra.
+ */
+export async function trackLocalRequest<T>(request: Promise<T>): Promise<T> {
+  localRequests += 1;
+  try {
+    return await request;
+  } finally {
+    localRequests -= 1;
+  }
+}
+
+function commit(incoming: Snapshot, firstOfConnection: boolean, fromAnotherSession: boolean): void {
+  if (!shouldApply(state.snapshot, incoming, firstOfConnection)) return;
+  setState({ snapshot: incoming, remoteVersion: fromAnotherSession ? incoming.version : state.remoteVersion });
+}
+
+/** Applies a snapshot from the stream, through the version guard. */
 export function applySnapshot(incoming: Snapshot, firstOfConnection = false): void {
-  if (shouldApply(state.snapshot, incoming, firstOfConnection)) setState({ snapshot: incoming });
+  // The very first snapshot is simply the initial load, not a change.
+  commit(incoming, firstOfConnection, state.snapshot !== null && localRequests === 0);
+}
+
+/** Applies the snapshot that came back in the response to this tab's own request. */
+export function applyOwnSnapshot(incoming: Snapshot): void {
+  commit(incoming, false, false);
 }
 
 /** Reads a snapshot event body. A bad payload is logged and dropped, never thrown. */
@@ -149,6 +187,11 @@ function subscribe(listener: () => void) {
   start();
   listeners.add(listener);
   return () => listeners.delete(listener);
+}
+
+/** The current live state without subscribing to it (for code outside React, and tests). */
+export function getLiveState(): LiveState {
+  return state;
 }
 
 /** Live snapshot, connection status and last sync time, shared by every component. */

@@ -1,8 +1,8 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 
-type Variant = 'primary' | 'secondary' | 'danger' | 'text' | 'invite';
+export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'text' | 'invite';
 
-const VARIANT: Record<Variant, { idle: string; busy: string }> = {
+const VARIANT: Record<ButtonVariant, { idle: string; busy: string }> = {
   primary: {
     idle: 'h-14 w-full rounded-card bg-live text-shell text-[17px] font-semibold hover:bg-live-hover active:bg-live-press',
     busy: 'h-14 w-full rounded-card bg-live-busy text-shell text-[17px] font-semibold',
@@ -26,7 +26,7 @@ const VARIANT: Record<Variant, { idle: string; busy: string }> = {
 };
 
 type Props = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> & {
-  variant: Variant;
+  variant: ButtonVariant;
   /** Shows a spinner, swaps the label to the busy one and blocks repeat taps. */
   loading?: boolean;
   busyLabel?: string;
@@ -43,9 +43,17 @@ export function Spinner({ size = 16 }: { size?: number }) {
   );
 }
 
-export function Button({ variant, loading = false, busyLabel, disabled, className = '', children, ...rest }: Props) {
+export function Button({
+  variant,
+  loading = false,
+  busyLabel,
+  disabled,
+  onClick,
+  className = '',
+  children,
+  ...rest
+}: Props) {
   const styles = VARIANT[variant];
-  const isDisabled = disabled || loading;
   const look = loading
     ? styles.busy
     : disabled
@@ -54,9 +62,15 @@ export function Button({ variant, loading = false, busyLabel, disabled, classNam
   return (
     <button
       type="button"
-      disabled={isDisabled}
+      disabled={disabled}
+      // While loading the button stays focusable (aria-disabled, not disabled), so a keyboard user
+      // who just pressed it does not lose focus if the request fails. Clicks are ignored.
+      aria-disabled={loading || undefined}
       aria-busy={loading || undefined}
-      className={`inline-flex cursor-pointer items-center justify-center gap-2.5 transition-[transform,background-color] duration-150 active:scale-[0.98] disabled:cursor-default ${look} ${className}`}
+      onClick={(event) => {
+        if (!loading) onClick?.(event);
+      }}
+      className={`inline-flex cursor-pointer items-center justify-center gap-2.5 transition-[transform,background-color] duration-150 active:scale-[0.98] disabled:cursor-default aria-disabled:cursor-default aria-disabled:active:scale-100 ${look} ${className}`}
       {...rest}
     >
       {loading && <Spinner />}
