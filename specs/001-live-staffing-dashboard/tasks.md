@@ -193,7 +193,7 @@ actions, tests and screens.
 **Independent Test**: `npm run measure` prints median and max for 20 runs of each, plus environment, and writes the raw samples.
 
 - [x] T066 [US5] Implement `e2e/measure.ts` (with `e2e/measure/*`, `e2e/stats.ts` and the unit test `e2e/unit/stats.test.ts`): 20 measured runs of update delay (worker click to manager DOM showing the change) and 20 measured runs of recovery time, each after 6 warm-up runs that are kept in the output but not counted, with no database reset between runs. Both timestamps come from the same system clock via `Date.now()` taken inside each page (not a shared Playwright clock). Recovery uses `context.setOffline` on the manager for 5 s (under the client's 10 s probe) and means: the participation cell shows the new state AND the connection badge is Live; `/api/demo/outage` is not needed and stays a separate optional variant after T068. Shared server start and environment moved to `e2e/env.ts`, and the reset and wait helpers to `e2e/db.ts` and `e2e/live.ts`, so the Playwright config and the measurement cannot drift. Runs on the host (`npm run measure`) and in the e2e container (`npm run measure:docker`); prints median, p95, max, machine, OS, browser and the SC-005 / SC-006 verdicts, and writes every sample to `e2e/measure-results/<mode>-<ISO>.json`
-- [ ] T067 [US5] Record the method and the measured results for the host run and the Docker run in `docs/measurements.md` (no estimates, only real runs), and commit the raw JSON files it cites in `docs/measurements/`
+- [x] T067 [US5] Record the method and the measured results for the host run and the Docker run in `docs/measurements.md` (no estimates, only real runs), and commit the raw JSON files it cites in `docs/measurements/`
 
 ---
 

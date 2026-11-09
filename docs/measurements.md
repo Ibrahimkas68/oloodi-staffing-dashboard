@@ -92,7 +92,38 @@ Run with `npm run measure`. Node and headless Chromium run on the developer's ma
 
 <!-- RESULTS:host -->
 
-Not run yet.
+**Environment** (same for the three runs; git commit `b876293`, working tree clean):
+
+- Machine: Apple M2 Pro, 10 cores, 16 GiB RAM, Mac14,9
+- OS: macOS 27.0.1 (darwin 27.0.0 arm64)
+- Power: Now drawing from 'AC Power'
+- Node v22.22.3, Playwright 1.65.0, headless Chromium 158.0.8127.18
+- Postgres in Docker (OrbStack engine), app server started by the tool on port 3100
+- Config: 20 measured runs, 6 warm-up runs, outage 5000 ms, pause 250 ms
+
+Full runs done: 3. Every one is reported below; none was left out. Times in ms.
+
+**Update delay**
+
+| Run | Samples | Failed | Min | Median | p95 | Max | Mean |
+|---|---|---|---|---|---|---|---|
+| 1 (2026-11-09T18-58-59-553Z) | 20 | 0 | 14 | 21 | 39 | 45 | 22.9 |
+| 2 (2026-11-09T19-01-51-228Z) | 20 | 0 | 12 | 19 | 25 | 28 | 18.8 |
+| 3 (2026-11-09T19-04-43-088Z) | 20 | 0 | 15 | 23 | 28 | 29 | 23 |
+| **Pooled, 3 runs** | 60 | 0 | 12 | 21 | 29 | 45 | 21.6 |
+
+Warm-up values (kept, not judged): run 1: 18, 17, 31, 23, 25, 28; run 2: 18, 18, 30, 22, 24, 25; run 3: 15, 30, 23, 26, 26, 28.
+
+**Recovery time**
+
+| Run | Samples | Failed | Min | Median | p95 | Max | Mean |
+|---|---|---|---|---|---|---|---|
+| 1 (2026-11-09T18-58-59-553Z) | 20 | 0 | 7 | 15 | 17 | 18 | 14 |
+| 2 (2026-11-09T19-01-51-228Z) | 20 | 0 | 8 | 16.5 | 19 | 20 | 15.4 |
+| 3 (2026-11-09T19-04-43-088Z) | 20 | 0 | 8 | 16.5 | 20 | 67 | 18.1 |
+| **Pooled, 3 runs** | 60 | 0 | 7 | 16 | 20 | 67 | 15.8 |
+
+Warm-up values (kept, not judged): run 1: 16, 14, 17, 12, 8, 11; run 2: 17, 18, 21, 14, 17, 16; run 3: 20, 10, 8, 14, 20, 10.
 
 ## Environment and results: Docker run
 
@@ -101,7 +132,37 @@ the CPU, RAM and OS describe the Linux VM that runs the containers, not the Mac.
 
 <!-- RESULTS:docker -->
 
-Not run yet.
+**Environment** (same for the three runs; git commit `b876293`, working tree clean):
+
+- Machine: the Linux VM of the OrbStack engine, not the Mac: 10 cores, 7.8 GiB RAM, linux 7.2.12-orbstack-00394-gbecdd6130068 arm64. The CPU model is "unknown" because the VM does not report one.
+- Docker: 29.8.2 10 8392671232 OrbStack
+- Node v26.13.0 (the one inside the pinned Playwright image), Playwright 1.65.0, headless Chromium 158.0.8127.18
+- Host power at the time: AC power (recorded by hand before each run in the session log, not by the tool, which cannot see the host from inside the container)
+- Config: 20 measured runs, 6 warm-up runs, outage 5000 ms, pause 250 ms
+
+Full runs done: 3. Every one is reported below; none was left out. Times in ms.
+
+**Update delay**
+
+| Run | Samples | Failed | Min | Median | p95 | Max | Mean |
+|---|---|---|---|---|---|---|---|
+| 1 (2026-11-09T19-08-11-122Z) | 20 | 0 | 5 | 15 | 18 | 19 | 14.5 |
+| 2 (2026-11-09T19-10-57-441Z) | 20 | 0 | 6 | 17 | 19 | 21 | 15.8 |
+| 3 (2026-11-09T19-13-43-817Z) | 20 | 0 | 9 | 14.5 | 22 | 23 | 15.1 |
+| **Pooled, 3 runs** | 60 | 0 | 5 | 15 | 21 | 23 | 15.1 |
+
+Warm-up values (kept, not judged): run 1: 7, 7, 15, 13, 10, 17; run 2: 9, 17, 11, 19, 16, 19; run 3: 6, 12, 12, 15, 16, 16.
+
+**Recovery time**
+
+| Run | Samples | Failed | Min | Median | p95 | Max | Mean |
+|---|---|---|---|---|---|---|---|
+| 1 (2026-11-09T19-08-11-122Z) | 20 | 0 | 10 | 20 | 27 | 33 | 20.2 |
+| 2 (2026-11-09T19-10-57-441Z) | 20 | 0 | 6 | 19 | 20 | 24 | 17.4 |
+| 3 (2026-11-09T19-13-43-817Z) | 20 | 0 | 8 | 22.5 | 27 | 27 | 21.7 |
+| **Pooled, 3 runs** | 60 | 0 | 6 | 20 | 27 | 33 | 19.7 |
+
+Warm-up values (kept, not judged): run 1: 23, 23, 21, 17, 17, 10; run 2: 21, 20, 15, 21, 20, 20; run 3: 23, 22, 21, 26, 23, 23.
 
 ## Raw data
 
@@ -123,7 +184,19 @@ How the two criteria are judged, over the measured runs only:
 
 <!-- VERDICT -->
 
-Not run yet.
+Six full runs were done (three host, three Docker), all on commit `b876293` with a clean tree and the
+Mac on AC power. None failed and none aborted, so both criteria are judged on every sample.
+
+| Criterion | Limit | Host run (3 runs, 60 samples) | Docker run (3 runs, 60 samples) | Verdict |
+|---|---|---|---|---|
+| SC-005, median update delay | under 1000 ms, no failed run | median 21 ms, max 45 ms, 0 failed | median 15 ms, max 23 ms, 0 failed | Met in all six runs |
+| SC-006, every recovery | under 15 000 ms, none failed | median 16 ms, max 67 ms, 0 failed | median 20 ms, max 33 ms, 0 failed | Met in all six runs |
+
+The host and Docker figures are separate measurements on different stacks and are not merged. All
+recoveries completed through the browser's `online` event, not through the 10 s probe.
+
+These results hold for loopback, emulated network loss and a 3-worker dashboard, as the limitations
+below say. They are not a claim about a real network.
 
 ## Limitations
 
@@ -152,6 +225,19 @@ Not run yet.
   visible in the console output and the JSON only.
 - **Server time is not measured separately.** The time from database commit to broadcast is not
   isolated; it is inside the update delay.
+- **Background load on the Mac during the host run.** macOS system processes (photo analysis, Storage,
+  Spotlight indexing) were seen running around the session. The conditions logged before each run were
+  AC power, 46 to 83 percent CPU idle and a load average between 3.3 and 9.2. The runs were not made on
+  an idle machine, which may have widened the spread. The Docker figures were taken right after, under the
+  same conditions.
+- **One recovery outlier.** Host run 3 has one recovery of 67 ms, well above the other 59 (7 to 20 ms).
+  It is kept: no sample was removed. The cause was not investigated, so it is not explained here.
+- **Docker run environment.** The engine is OrbStack, so the "machine" in the Docker results is its Linux
+  VM (10 cores, 7.8 GiB RAM). Node there is v26.13.0 (from the pinned Playwright image), while the host
+  run uses v22.22.3. The CPU model is not reported inside the VM, and the host power source cannot be
+  read from inside the container.
+- **Three runs per mode.** The pooled row is 60 samples from three separate runs. Run to run medians
+  differ by a few ms, which is the spread to expect.
 
 ## How to reproduce
 

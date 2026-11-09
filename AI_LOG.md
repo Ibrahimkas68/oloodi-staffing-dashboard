@@ -99,8 +99,12 @@ covers it.
   lint, local e2e, compose config. Two smoke runs with tiny settings, deleted afterwards and not quoted
   anywhere: a normal one, and one with a temporarily sabotaged recovery run to prove the abort path
   (file restored byte for byte).
-- **Not yet:** the official runs. They must happen on a committed tree so the raw data records the
-  commit, with the machine plugged in.
+- **Official runs (done 2026-11-09):** three host runs and three Docker runs on commit `b876293`, clean
+  tree, Mac on AC power. No failed or aborted run. Host: median update delay 21 ms (max 45), median
+  recovery 16 ms (max 67). Docker: median update delay 15 ms (max 23), median recovery 20 ms (max 33).
+  Raw JSON in `docs/measurements/`, tables and limitations in `docs/measurements.md`. The numbers were
+  copied from the JSON by script, not typed by hand. The Mac was not idle (macOS background activity),
+  which the doc states.
 
 ### 2026-11-09 · Docker image and e2e container (T077, T086) · analyser, architect and reviewer agents + Claude
 - **Asked:** a production image that `docker compose up --build` starts from a clean clone, and an
