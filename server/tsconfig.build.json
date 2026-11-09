@@ -1,0 +1,12 @@
+{
+  // Production build: compiles src to JavaScript in dist. Tests are not part of the image.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    // rootDir "src" keeps dist/index.js at the same depth as src/index.ts, so the relative paths to
+    // web/dist, server/db and the root .env resolve to the same places as when running from src.
+    "rootDir": "src",
+    "outDir": "dist"
+  },
+  "include": ["src"]
+}

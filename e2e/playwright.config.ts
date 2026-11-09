@@ -1,5 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
-import { E2E_PORT, e2eEnvironment } from './env.js';
+import { E2E_PORT, e2eEnvironment, e2eTarget } from './env.js';
 
 const SERVER_START_TIMEOUT_MS = 120_000;
 
@@ -11,6 +11,8 @@ const START_APP = [
   'npm run start -w @staffing/server',
 ].join(' && ');
 
+const target = e2eTarget();
+
 export default defineConfig({
   testDir: './tests',
   // Tests share one database and one live hub, so they run one at a time.
@@ -19,25 +21,30 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [['html', { open: 'never' }], ['list']] : 'list',
   use: {
-    // Always the server this config starts, so the database that gets reset is the one under test.
-    baseURL: `http://localhost:${E2E_PORT}`,
+    // Local mode: the server this config starts. External mode: the app in the e2e container.
+    // Either way env.ts has checked that the database that gets reset belongs to this target.
+    baseURL: target.baseUrl,
     trace: 'retain-on-failure',
   },
-  webServer: {
-    command: START_APP,
-    // Relative to this config file: run from the repository root.
-    cwd: '..',
-    url: `http://localhost:${E2E_PORT}/api/health`,
-    // A server that is already running would be using another database.
-    reuseExistingServer: false,
-    timeout: SERVER_START_TIMEOUT_MS,
-    env: {
-      ...e2eEnvironment(),
-      PORT: String(E2E_PORT),
-      LOG_LEVEL: 'warn',
-      RATE_LIMIT_PER_MINUTE: '10000',
-      DEMO_MODE: 'false',
-    },
-  },
+  // External mode: the app is already running, so there is nothing to start.
+  webServer:
+    target.mode === 'external'
+      ? undefined
+      : {
+          command: START_APP,
+          // Relative to this config file: run from the repository root.
+          cwd: '..',
+          url: `http://localhost:${E2E_PORT}/api/health`,
+          // A server that is already running would be using another database.
+          reuseExistingServer: false,
+          timeout: SERVER_START_TIMEOUT_MS,
+          env: {
+            ...e2eEnvironment(),
+            PORT: String(E2E_PORT),
+            LOG_LEVEL: 'warn',
+            RATE_LIMIT_PER_MINUTE: '10000',
+            DEMO_MODE: 'false',
+          },
+        },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
 });

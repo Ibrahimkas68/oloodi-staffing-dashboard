@@ -132,9 +132,10 @@ Each entry: Decision, Rationale, Alternatives considered.
 
 - **Decision**: npm workspaces for code; all infrastructure grouped in `infra/` (Docker, Caddy,
   scripts, deploy docs), with a root `compose.yaml` that only includes
-  `infra/docker/docker-compose.yml`; multi-stage Dockerfile, non-root, healthcheck; Compose runs
+  `infra/docker/docker-compose.yml`; multi-stage Dockerfile that runs compiled JavaScript (`tsc` to `server/dist`, not tsx), non-root, healthcheck; Compose runs
   db + app (`docker compose up --build` from the root); Postgres bound to 127.0.0.1; schema and seed applied on first start
   if empty; GitHub Actions CI (typecheck, lint, unit + API tests with a Postgres service, `npm audit
-  --omit=dev`, Docker build).
+  --omit=dev`, Docker build). The e2e tests also run in containers from a separate compose file
+  (own project, throwaway database, official Playwright image pinned to the locked version).
 - **Rationale**: A reviewer can run everything from a clean clone with one command.
 - **Alternatives**: Local Postgres install (setup friction), cloud hosting (optional, not required).

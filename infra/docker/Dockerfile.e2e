@@ -1,0 +1,35 @@
+# End-to-end test runner. Build context is the repository root (see docker-compose.e2e.yml).
+#
+# The Playwright image ships Chromium and its system libraries. The tag MUST equal the locked
+# @playwright/test version (1.65.0 in package-lock.json), or Playwright cannot find its browser.
+ARG PLAYWRIGHT_VERSION=1.65.0
+FROM mcr.microsoft.com/playwright:v${PLAYWRIGHT_VERSION}-noble
+
+WORKDIR /repo
+
+# Only the dependencies the tests and the reset script need:
+# - e2e: @playwright/test, pg, tsx
+# - server: zod and pg, which server/src/db/reset.ts and config.ts import (shared is linked in by npm)
+# All four manifests are needed so npm can check the lockfile against every workspace.
+# --ignore-scripts: browsers come from the image, so no download step runs.
+COPY package.json package-lock.json ./
+COPY shared/package.json shared/
+COPY server/package.json server/
+COPY web/package.json web/
+COPY e2e/package.json e2e/
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci -w @staffing/e2e -w @staffing/server --ignore-scripts
+
+# The reset script runs server/src/db/reset.ts with tsx, which needs the SQL files and shared source.
+COPY tsconfig.base.json ./
+COPY shared shared
+COPY server/src server/src
+COPY server/db server/db
+COPY infra/scripts infra/scripts
+COPY e2e e2e
+
+# Runs as root: this is a throwaway test container, it publishes no ports, and root can write the
+# bind-mounted report folders. Never use this image for anything else.
+# Working directory is e2e so reports land in e2e/playwright-report, like a local run.
+WORKDIR /repo/e2e
+CMD ["npx", "playwright", "test"]

@@ -43,12 +43,34 @@ export function createApp({ service, hub, logger, rateLimitPerMinute, webDist }:
 
   // 1. request id, 2. logs
   app.use(requestId);
-  app.use(pinoHttp({ logger, genReqId: (_req, res) => String(res.locals.requestId) }));
+  app.use(
+    pinoHttp({
+      logger,
+      genReqId: (_req, res) => String(res.locals.requestId),
+      // The container health check calls this every 15 s; it would drown the real requests.
+      autoLogging: { ignore: (req) => req.url === '/api/health' },
+      // One short line per request instead of every request and response header.
+      serializers: {
+        req: (req: { id: unknown; method: string; url: string }) => ({ id: req.id, method: req.method, url: req.url }),
+        res: (res: { statusCode: number }) => ({ statusCode: res.statusCode }),
+      },
+    }),
+  );
   // 3. security headers
   app.use(
     helmet({
       contentSecurityPolicy: {
-        directives: { defaultSrc: ["'self'"], connectSrc: ["'self'"], imgSrc: ["'self'", 'data:'] },
+        directives: {
+          defaultSrc: ["'self'"],
+          connectSrc: ["'self'"],
+          imgSrc: ["'self'", 'data:'],
+          // helmet adds `upgrade-insecure-requests` by default. Opened over plain http at any
+          // address except localhost (a phone on the same wifi, a server without TLS), the browser
+          // then rewrites the page's own script and stylesheet to https, which has no listener
+          // here, and the page stays blank. Every resource is same-origin, so nothing needs
+          // upgrading; HTTPS, where wanted, is the reverse proxy's job.
+          upgradeInsecureRequests: null,
+        },
       },
     }),
   );

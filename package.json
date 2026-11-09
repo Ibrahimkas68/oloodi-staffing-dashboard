@@ -16,6 +16,7 @@
     "build": "npm run build -w @staffing/shared -w @staffing/web -w @staffing/server",
     "test": "npm run test -w @staffing/shared -w @staffing/server -w @staffing/web",
     "e2e": "npm run e2e -w @staffing/e2e",
+    "e2e:docker": "sh infra/scripts/e2e-docker.sh",
     "measure": "npm run measure -w @staffing/e2e",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "eslint .",

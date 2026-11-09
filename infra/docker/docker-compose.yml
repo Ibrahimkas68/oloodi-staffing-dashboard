@@ -1,5 +1,12 @@
+# Run from the repository root:  docker compose up --build   (then open http://localhost:3000)
+# Stop and keep data:            docker compose down
+# Stop and wipe the database:    docker compose down -v
+#
 # Included from the root compose.yaml with project_directory set to the repo root,
 # so every relative path below is relative to the repository root.
+#
+# The password defaults below are committed on purpose and are for local use only. Override them
+# in .env (see .env.example) for anything that is reachable by other people.
 
 services:
   db:
@@ -14,7 +21,10 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      # -h 127.0.0.1 forces a TCP check. During first-run init the official image runs a temporary
+      # server that listens on the socket only; a socket check would report healthy too early and
+      # the app would fail to connect.
+      test: ['CMD-SHELL', 'pg_isready -h 127.0.0.1 -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
       interval: 2s
       timeout: 3s
       retries: 20
@@ -23,6 +33,20 @@ services:
     build:
       context: .
       dockerfile: infra/docker/Dockerfile
+    image: staffing-app:local
+    # A proper PID 1 that forwards signals and reaps processes.
+    init: true
+    # The app force-exits 10 s after SIGTERM; leave a little more than that before SIGKILL.
+    stop_grace_period: 15s
+    restart: unless-stopped
+    # The app writes nothing to disk, so the container can be locked down.
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
     depends_on:
       db:
         condition: service_healthy
@@ -32,6 +56,8 @@ services:
       DEMO_MODE: ${DEMO_MODE:-false}
       LOG_LEVEL: ${LOG_LEVEL:-info}
       SSE_MAX_CLIENTS: ${SSE_MAX_CLIENTS:-100}
+      SSE_PING_MS: ${SSE_PING_MS:-15000}
+      RATE_LIMIT_PER_MINUTE: ${RATE_LIMIT_PER_MINUTE:-120}
       APP_DB_PASSWORD: ${APP_DB_PASSWORD:-staffing_app_dev}
       # Inside the Compose network the database host is "db", not localhost.
       DATABASE_URL: postgres://staffing_app:${APP_DB_PASSWORD:-staffing_app_dev}@db:5432/${POSTGRES_DB:-staffing}

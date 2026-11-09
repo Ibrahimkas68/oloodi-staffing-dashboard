@@ -5,8 +5,8 @@ Quickstart scenarios, run against the real app and a real Postgres. Source of th
 
 ## How the app was run
 
-`npm run dev` and the Dockerfile come in later tasks (T077, T078), so the app was started by hand
-with the database container up:
+`npm run dev` comes in a later task (T078). The tables below come from the first run, where the app
+was started by hand with the database container up:
 
 ```bash
 npm run build -w @staffing/web
@@ -17,6 +17,18 @@ sh infra/scripts/qa-api.sh --yes --db-outage
 The script resets the database named in `.env` first, so it wipes development data. Date of the
 run: 2026-11-09, macOS, Node 22, Postgres 16 in Docker, server log level `warn`. The database was
 reset again after the run.
+
+### The same script against the Docker image
+
+The script was run a second time against the container from `docker compose up --build` (image
+`staffing-app:local`, started from an empty volume), on 2026-11-09, with `--db-outage`: **36 of 36
+checks passed**, and a run without `--db-outage` passed too. During the outage the container did not
+restart (restart count 0). The log shows the pool reporting the ten broken idle connections, then
+the database host disappearing from DNS, and the app answering health with 503 until the database
+came back. Other checks on the image: first start applies schema, roles and seed once; a restart
+keeps the data and does not seed again; `docker stop` is graceful (SIGTERM logged, exit code 0,
+under a second); the process runs as uid 1000 (`node`) on a read-only filesystem with no `.env`,
+specs, e2e or test code inside.
 
 ## API checks (infra/scripts/qa-api.sh)
 

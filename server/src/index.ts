@@ -12,9 +12,19 @@ const logger = pino({ level: config.LOG_LEVEL });
 
 // First start in Docker: create schema, roles and seed if the database is empty.
 if (config.DATABASE_OWNER_URL && config.APP_DB_PASSWORD) {
-  if (await isDatabaseEmpty(config.DATABASE_OWNER_URL)) {
-    await resetDatabase(config.DATABASE_OWNER_URL, config.APP_DB_PASSWORD);
-    logger.info('empty database: schema, roles and seed applied');
+  try {
+    if (await isDatabaseEmpty(config.DATABASE_OWNER_URL)) {
+      await resetDatabase(config.DATABASE_OWNER_URL, config.APP_DB_PASSWORD);
+      logger.info('empty database: schema, roles and seed applied');
+    }
+  } catch (error) {
+    // One readable line instead of a stack trace: this is almost always a setup problem.
+    const reason = error instanceof Error ? error.message : String(error);
+    logger.fatal(
+      `cannot prepare the database as the owner role: ${reason}. ` +
+        'If this is a reused Docker volume with different passwords, run `docker compose down -v`.',
+    );
+    process.exit(1);
   }
 }
 

@@ -134,18 +134,22 @@ e2e/
 infra/                      # everything about running, building and deploying
 ├── README.md               # how to run locally, reset, deploy, roll back; server requirements
 ├── docker/
-│   ├── Dockerfile          # multi-stage, non-root, HEALTHCHECK (build context: repo root)
-│   └── docker-compose.yml  # db (127.0.0.1 only, volume, healthcheck) + app
+│   ├── Dockerfile          # multi-stage, compiled JavaScript, non-root, HEALTHCHECK (build context: repo root)
+│   ├── Dockerfile.e2e      # Playwright image pinned to the locked version, runs the e2e tests
+│   ├── docker-compose.yml  # db (127.0.0.1 only, volume, healthcheck) + app
+│   └── docker-compose.e2e.yml  # e2e containers: own project, throwaway database, no ports
 ├── caddy/
 │   └── Caddyfile           # reverse proxy example, automatic HTTPS, SSE buffering off
 └── scripts/
     ├── dev.sh              # db up, wait for health, server + web in watch mode
     ├── reset-db.sh         # drop, recreate, seed (owner role)
     ├── qa-api.sh           # manual API checks with curl
+    ├── e2e-docker.sh       # e2e containers: up, then always down -v
     ├── server-init.sh      # fresh Ubuntu VPS: Docker, deploy user, UFW
     └── deploy.sh           # pull, build, up -d, wait for /api/health
 
 compose.yaml                # one line: include infra/docker/docker-compose.yml
+.dockerignore               # root, because the Docker build context is the repository root
 .env.example                # root, read by npm scripts and Compose
 .github/workflows/ci.yml    # GitHub only reads workflows here; it calls infra/ scripts
 ```

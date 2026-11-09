@@ -79,6 +79,38 @@ covers it.
   three Invite buttons; clicking Invite showed "Inviting…" (disabled), then "✓ Invite sent to
   Youssef"; an accept sent with curl updated the row, Filled 1/3 and the bar without reload.
 
+### 2026-11-09 · Docker image and e2e container (T077, T086) · analyser, architect and reviewer agents + Claude
+- **Asked:** a production image that `docker compose up --build` starts from a clean clone, and an
+  e2e container so the team receiving the project needs no local Node or browser install.
+- **Produced:** a 3-stage `infra/docker/Dockerfile` (compiled JavaScript, not tsx; non-root `node`
+  user; healthcheck; read-only filesystem; 268 MB), `.dockerignore`, a separate
+  `docker-compose.e2e.yml` (own project, throwaway in-memory database, no ports, no volumes),
+  `Dockerfile.e2e` on the official Playwright image, `infra/scripts/e2e-docker.sh`, `infra/README.md`.
+- **Changed from the task text:** a separate compose file instead of a profile (a profile cannot set
+  its own project name, and would also start the demo database and app on the same ports).
+- **Reviewer findings fixed:** `.dockerignore` only excluded `.env` at the repo root; the e2e
+  database host was not validated (any host could have been wiped); the e2e script did not clean up
+  on Ctrl-C. The e2e target is now strict: in the container both the app and the database must be
+  compose service names, and a dev server on localhost is refused.
+- **Two real bugs found only because the container test uses a hostname instead of localhost** (a
+  plain-http page at any other address is not a "secure context"):
+  1. helmet's default `upgrade-insecure-requests` made the browser fetch the page's own script and
+     stylesheet over https, so the page stayed blank (ERR_SSL_PROTOCOL_ERROR). Anyone opening the
+     app by IP or hostname over http, such as a worker on a phone on the same wifi, would have seen
+     nothing. Removed, with a test.
+  2. `crypto.randomUUID()` is undefined there, so every action button threw before sending
+     anything. New `newRequestId()` falls back to `getRandomValues`, with tests. `navigator.clipboard`
+     is also missing there; noted on T075.
+  Both reproduced by hand at the LAN address before fixing, and checked by hand after.
+- **Also:** request logs are one short line, health checks are not logged (they ran every 15 s with
+  every header).
+- **Verified:** image builds; first start from an empty volume applies schema, roles and seed once;
+  a restart keeps data; `docker stop` is graceful (exit 0); runs as uid 1000 on a read-only
+  filesystem with no `.env`, specs or tests inside; QA script 36 of 36 against the container
+  including the database outage drill (container restart count 0); e2e container passes twice
+  (2 of 2, exit 0, nothing left behind); local e2e still passes; 15 guard cases for the e2e target
+  checked with a scratch script; 201 unit and API tests.
+
 ### 2026-11-09 · US4 reliable actions and live connection (T057 to T065) · analyser, architect and reviewer agents + Claude
 - **Asked:** repeats, retries, concurrency, honest failures, offline indicator and automatic
   catch-up. The analyser found T061 to T064 (banner, badge, mounting, "updated from another

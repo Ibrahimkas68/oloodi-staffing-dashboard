@@ -1,8 +1,7 @@
 # Quickstart: run and validate
 
-Some commands below are targets. `npm run dev` (T078) and `docker compose up --build` (T077) do not exist
-yet. Until then, run the app like this (the database container must be up, for example
-`docker compose up -d db`):
+Some commands below are targets. `npm run dev` (T078) does not exist yet. Until then, run the app like this
+(the database container must be up, for example `docker compose up -d db`):
 
 ```bash
 npm run build -w @staffing/web && npm run start -w @staffing/server   # http://localhost:3000
@@ -18,6 +17,7 @@ npm run build -w @staffing/web && npm run start -w @staffing/server   # http://l
 ```bash
 docker compose up --build        # db + app, http://localhost:3000 (root compose.yaml includes infra/docker/docker-compose.yml)
 npm run db:reset                 # back to the seed state (infra/scripts/reset-db.sh)
+npm run e2e:docker               # e2e tests in containers, throwaway database (infra/docker/docker-compose.e2e.yml)
 npm run dev                      # development: db in Docker, server and web with hot reload (infra/scripts/dev.sh)
 ```
 

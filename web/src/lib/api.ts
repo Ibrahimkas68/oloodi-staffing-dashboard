@@ -6,6 +6,7 @@ import {
   type ActionResult,
   type ApiError,
 } from '@staffing/shared';
+import { newRequestId } from './requestId.js';
 
 export const TIMEOUT_MS = 8_000;
 /** Delays before each retry. Retries happen only on network errors and 5xx. */
@@ -41,7 +42,7 @@ async function attempt(url: string, requestId: string): Promise<Response> {
  */
 export async function postAction(assignmentId: number, action: Action): Promise<ActionOutcome> {
   const url = `/api/assignments/${assignmentId}/${ACTION_PATHS[action]}`;
-  const requestId = crypto.randomUUID();
+  const requestId = newRequestId();
 
   for (let tryIndex = 0; tryIndex <= RETRY_DELAYS_MS.length; tryIndex += 1) {
     if (tryIndex > 0) await sleep(RETRY_DELAYS_MS[tryIndex - 1]!);
