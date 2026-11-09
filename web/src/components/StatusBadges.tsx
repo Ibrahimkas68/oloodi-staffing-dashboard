@@ -8,8 +8,6 @@ const PARTICIPATION: Record<Participation, { label: string; className: string }>
   cancelled: { label: 'Cancelled', className: 'bg-p-cancelled text-p-cancelled-fg' },
 };
 
-export const participationLabel = (value: Participation) => PARTICIPATION[value].label;
-
 /** Participation: soft-tinted pill. The word always carries the meaning, colour backs it up. */
 export function ParticipationPill({ value }: { value: Participation }) {
   const { label, className } = PARTICIPATION[value];
@@ -27,8 +25,6 @@ const ATTENDANCE: Record<Attendance, { label: string; className: string }> = {
   checked_in: { label: 'Checked in', className: 'border-a-checked-in text-a-checked-in' },
   checked_out: { label: 'Checked out', className: 'border-a-checked-out-line text-a-checked-out' },
 };
-
-export const attendanceLabel = (value: Attendance) => ATTENDANCE[value].label;
 
 function AttendanceIcon({ value }: { value: Attendance }) {
   if (value === 'checked_in') {

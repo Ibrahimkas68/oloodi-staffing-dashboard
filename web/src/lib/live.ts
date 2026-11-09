@@ -16,9 +16,17 @@ export const WATCHDOG_MS = 35_000;
 /** After this many consecutive errors the badge says Offline instead of Reconnecting. */
 const OFFLINE_AFTER_ERRORS = 3;
 
-/** Only a strictly newer version may replace what we hold. */
-export function shouldApply(current: Snapshot | null, incoming: Snapshot): boolean {
-  return current === null || incoming.version > current.version;
+/**
+ * Only a strictly newer version may replace what we hold.
+ *
+ * One exception: the first snapshot of a new connection may carry a lower version after a database
+ * reset (the version restarts at 0). It is accepted when it was built no earlier than the snapshot
+ * we hold, so a reset is picked up without a reload, while an older snapshot that raced a commit
+ * is still ignored.
+ */
+export function shouldApply(current: Snapshot | null, incoming: Snapshot, firstOfConnection = false): boolean {
+  if (current === null || incoming.version > current.version) return true;
+  return firstOfConnection && incoming.serverTime >= current.serverTime;
 }
 
 /** Manual reconnect delays after a closed stream: 1 s, 2 s, 4 s, then 10 s max. */
@@ -35,8 +43,20 @@ function setState(patch: Partial<LiveState>) {
 }
 
 /** Applies a snapshot from the stream or from an HTTP response, through the same version guard. */
-export function applySnapshot(incoming: Snapshot): void {
-  if (shouldApply(state.snapshot, incoming)) setState({ snapshot: incoming });
+export function applySnapshot(incoming: Snapshot, firstOfConnection = false): void {
+  if (shouldApply(state.snapshot, incoming, firstOfConnection)) setState({ snapshot: incoming });
+}
+
+/** Reads a snapshot event body. A bad payload is logged and dropped, never thrown. */
+function parseSnapshot(data: string): Snapshot | null {
+  try {
+    const parsed = snapshotSchema.safeParse(JSON.parse(data));
+    if (parsed.success) return parsed.data;
+    console.warn('Ignored a snapshot that does not match the schema', parsed.error.issues);
+  } catch {
+    console.warn('Ignored a snapshot that is not valid JSON');
+  }
+  return null;
 }
 
 let source: EventSource | null = null;
@@ -46,10 +66,14 @@ let attempt = 0;
 let errorCount = 0;
 let disconnectedAt: number | null = null;
 
-function touch() {
+function armWatchdog() {
   clearTimeout(watchdog);
   // A connection that stays silent longer than two heartbeats is treated as dead.
   watchdog = setTimeout(restart, WATCHDOG_MS);
+}
+
+function touch() {
+  armWatchdog();
   if (state.status !== 'live') {
     const recovery = disconnectedAt === null ? state.lastRecoveryMs : Date.now() - disconnectedAt;
     disconnectedAt = null;
@@ -71,13 +95,20 @@ function open() {
   source?.close();
   const es = new EventSource('/api/events');
   source = es;
+  // A connection that never sends anything is retried too, not only one that goes quiet later.
+  armWatchdog();
 
+  let firstSnapshot = true;
   es.addEventListener('snapshot', (event) => {
-    const parsed = snapshotSchema.safeParse(JSON.parse((event as MessageEvent<string>).data));
-    if (parsed.success) applySnapshot(parsed.data);
+    const incoming = parseSnapshot((event as MessageEvent<string>).data);
+    if (!incoming) return;
+    applySnapshot(incoming, firstSnapshot);
+    firstSnapshot = false;
     touch();
   });
-  es.addEventListener('ping', touch);
+  // A ping proves the connection is alive, but the status only becomes Live once real data
+  // (a valid snapshot) has arrived on this connection.
+  es.addEventListener('ping', () => (firstSnapshot ? armWatchdog() : touch()));
 
   es.onerror = () => {
     errorCount += 1;

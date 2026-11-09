@@ -84,12 +84,12 @@ actions, tests and screens.
 
 ### Web shell
 
-- [x] T035 Import the Claude Design project "Shiftboard" (`State Sheet.dc.html`, with `image-slot.js`, `shiftboard-data.js`, `support.js`) through the claude_design MCP and record its tokens (colours, type scale, spacing, radius, shadows, motion durations) in `web/tailwind.config.ts`; note in `AI_LOG.md` anything in the design that the spec does not allow and was left out
+- [x] T035 Import the Claude Design project "Shiftboard" (`State Sheet.dc.html`, with `image-slot.js`, `shiftboard-data.js`, `support.js`) through the claude_design MCP and record its tokens (colours, type scale, spacing, radius, shadows, motion durations) in `web/src/index.css` (`@theme` tokens); note in `AI_LOG.md` anything in the design that the spec does not allow and was left out
 - [x] T036 [P] Implement `web/src/lib/api.ts`: `postAction(assignmentId, action)` with 8 s `AbortController` timeout, `X-Request-Id`, up to 2 retries after 300 ms and 1 s on network errors and 5xx only, no retry on 4xx, typed `ActionResult` or `ApiError`
-- [x] T037 [P] Implement `web/src/lib/live.ts`: `EventSource('/api/events')`, `status` (`live` | `reconnecting` | `offline`), `lastSyncedAt`, version guard (apply only if `version > current`), 35 s watchdog, manual reconnect with backoff 1 s, 2 s, 4 s, max 10 s after a closed stream; exported as a React hook `useLiveSnapshot()` that also accepts snapshots from HTTP responses through the same guard
+- [x] T037 [P] Implement `web/src/lib/live.ts`: `EventSource('/api/events')`, `status` (`live` | `reconnecting` | `offline`), `lastSyncedAt`, version guard (apply only if `version > current`), 35 s watchdog, manual reconnect with backoff 1 s, 2 s, 4 s, max 10 s after a closed stream; exported as a React hook `useLive()` that also accepts snapshots from HTTP responses through the same guard
 - [x] T038 [P] Unit tests in `web/tests/live.test.ts` for the version guard (older or equal versions ignored) and the backoff sequence
 - [x] T039 Implement routing and layout in `web/src/main.tsx` and `web/src/App.tsx`: `/` manager dashboard, `/worker` worker view, shared header with the connection status text
-- [x] T040 [P] Implement `web/src/components/ParticipationPill.tsx` (solid tinted pill, text always shown) and `web/src/components/AttendanceChip.tsx` (outlined chip with icon, text always shown) using the design tokens
+- [x] T040 [P] Implement `ParticipationPill` (solid tinted pill, text always shown) and `AttendanceChip` (outlined chip with icon, text always shown) in `web/src/components/StatusBadges.tsx` using the design tokens
 - [x] T041 [P] Implement `web/src/components/Toasts.tsx` (success, neutral "already done", conflict, network failure) and a `useAction()` hook in `web/src/lib/useAction.ts` that disables the control while pending, maps `changed:false` to the neutral toast, 409 to the conflict toast with the server message, and final network failure to "Couldn't reach the server. Nothing was saved. Try again."
 
 **Checkpoint**: `npm test` passes (unit, constraints, errors); `GET /api/state` returns the seed snapshot; both routes render with live status.
@@ -104,15 +104,15 @@ actions, tests and screens.
 
 ### Tests for User Story 1
 
-- [ ] T042 [P] [US1] API test in `server/tests/api/invite.test.ts`: invite uninvited → 200 `changed:true`, `invitedAt` set, version +1, one event with actor `manager`; invite again → 200 `changed:false`, same `invitedAt`; invite a declined worker → 409 `INVALID_TRANSITION` (A1)
-- [ ] T043 [P] [US1] SSE test in `server/tests/api/sse.test.ts`: a connected client receives the seed snapshot first, then a snapshot with the new version after an invite
+- [x] T042 [P] [US1] API test in `server/tests/api/invite.test.ts`: invite uninvited → 200 `changed:true`, `invitedAt` set, version +1, one event with actor `manager`; invite again → 200 `changed:false`, same `invitedAt`; invite a declined worker → 409 `INVALID_TRANSITION` (A1)
+- [x] T043 [P] [US1] SSE test in `server/tests/api/sse.test.ts`: a connected client receives the seed snapshot first, then a snapshot with the new version after an invite
 
 ### Implementation for User Story 1
 
-- [ ] T044 [P] [US1] Implement `web/src/components/ShiftHeader.tsx`: title, date, start to end time, location, required workers (times formatted with tabular numerals)
-- [ ] T045 [P] [US1] Implement `web/src/components/KpiRow.tsx`: Filled `x/required` with a segmented bar, Remaining, Checked in now, Checked out, all read from `snapshot.counts`
-- [ ] T046 [P] [US1] Implement `web/src/components/WorkerTable.tsx`: columns Worker (initials avatar + name), Participation, Attendance, Invited, Responded, Checked in, Checked out, Action; empty times shown as "—"; Invite button only for `uninvited` rows, using `useAction()`
-- [ ] T047 [US1] Implement `web/src/pages/Manager.tsx` composing ShiftHeader, KpiRow and WorkerTable from `useLiveSnapshot()`
+- [x] T044 [P] [US1] Implement `web/src/components/ShiftHeader.tsx`: title, date, start to end time, location, required workers (times formatted with tabular numerals)
+- [x] T045 [P] [US1] Implement `web/src/components/KpiRow.tsx`: Filled `x/required` with a segmented bar, Remaining, Checked in now, Checked out, all read from `snapshot.counts`
+- [x] T046 [P] [US1] Implement `web/src/components/WorkerTable.tsx`: columns Worker (initials avatar + name), Participation, Attendance, Invited, Responded, Checked in, Checked out, Action; empty times shown as "—"; Invite button only for `uninvited` rows, using `useAction()`
+- [x] T047 [US1] Implement `web/src/pages/Manager.tsx` composing ShiftHeader, KpiRow and WorkerTable from `useLive()`
 
 **Checkpoint**: US1 independent test passes in the browser.
 
@@ -134,7 +134,7 @@ actions, tests and screens.
 - [ ] T050 [P] [US2] Implement `web/src/components/WorkerSelector.tsx` (initials avatars, keeps the choice in the `worker` query parameter)
 - [ ] T051 [P] [US2] Implement `web/src/components/WorkerStatus.tsx`: "Participation: X" and "Attendance: Y" lines using the pill and chip, plus recorded times
 - [ ] T052 [US2] Implement `web/src/components/WorkerActions.tsx` driven by `shared/src/transitions.ts` allowed actions: Invited → Accept + Decline; Accepted + Not started → Check in + text button "Cancel my spot"; Cancelled → "Accept again"; Uninvited → "No invitation yet"; Declined → final message; full-width buttons min height 52 px
-- [ ] T053 [US2] Implement `web/src/pages/Worker.tsx` composing selector, shift card, status, actions from `useLiveSnapshot()`
+- [ ] T053 [US2] Implement `web/src/pages/Worker.tsx` composing selector, shift card, status, actions from `useLive()`
 
 **Checkpoint**: US1 and US2 work together and independently.
 
@@ -174,8 +174,8 @@ actions, tests and screens.
 
 ### Implementation for User Story 4
 
-- [ ] T061 [P] [US4] Implement `web/src/components/OfflineBanner.tsx`: shown when `status !== 'live'`, text "Live updates paused. Reconnecting… Actions may fail until we're back." with the last sync time
-- [ ] T062 [P] [US4] Implement `web/src/components/ConnectionBadge.tsx` (C1): "● Live · synced Xs ago", "◐ Reconnecting…", "○ Offline, data from HH:MM"
+- [ ] T061 [P] [US4] Implement `OfflineBanner` in `web/src/components/Connection.tsx`: shown when `status !== 'live'`, text "Live updates paused. Reconnecting… Actions may fail until we're back." with the last sync time
+- [ ] T062 [P] [US4] Implement `ConnectionBadge` (C1) in `web/src/components/Connection.tsx`: "● Live · synced Xs ago", "◐ Reconnecting…", "○ Offline, data from HH:MM"
 - [ ] T063 [US4] Mount OfflineBanner and ConnectionBadge in `web/src/App.tsx` for both views
 - [ ] T064 [US4] Implement C7 in `web/src/pages/Worker.tsx`: when a snapshot changes the selected worker and the change was not this tab's own pending action, show "Updated from another session"
 - [ ] T065 [US4] Write `infra/scripts/qa-api.sh` (curl every endpoint, repeat actions, bad ids, `curl -I` headers) and record results of quickstart.md scenarios 1 to 13 and 15 in `docs/qa.md`

@@ -28,6 +28,11 @@ Ordering: snapshots carry `version`; versions increase strictly with commits (sh
 - Status: `live` after the first snapshot; `reconnecting` on error while `EventSource` retries;
   `offline` once the stream is closed for good or retries keep failing; show `lastSyncedAt`.
 - Version guard: apply a snapshot only if `version > current.version` (also for HTTP responses).
+  Exception: the first snapshot of a new connection is also applied when its `serverTime` is not
+  earlier than the held snapshot's, so a database reset (version back to 0) is picked up without a
+  reload, while an older snapshot that raced a commit is still ignored.
+- A `ping` before the first valid snapshot only re-arms the watchdog; the status turns `live` on
+  the first valid snapshot.
 - Watchdog: no `snapshot` or `ping` for 35 s → close and reconnect.
 - Closed stream (error status such as 503): reconnect manually with backoff 1 s, 2 s, 4 s, max 10 s.
 - Catch-up: the first event of every connection is a full snapshot; no replay of missed events.

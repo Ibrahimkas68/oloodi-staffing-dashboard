@@ -65,3 +65,42 @@ covers it.
   messages. Listed in `docs/design/README.md`.
 - **Verified:** typecheck, lint, 76 tests, build; in the browser at 1440 px and 375 px: badge Live,
   server stopped → banner + "Offline, data from …", server restarted → back to Live without reload.
+
+### 2026-11-09 · US1 manager dashboard (T042 to T047) · Claude
+- **Asked:** invite and SSE tests, shift header, KPI row, worker table, manager page per
+  `Dashboard.dc.html`.
+- **Produced:** `server/tests/api/invite.test.ts`, `server/tests/api/sse.test.ts`,
+  `web/src/components/{ShiftHeader,KpiRow,WorkerTable}.tsx`, updated `Manager.tsx`.
+- **Changed or rejected:** the new tests passed on the first run instead of failing first, because
+  the generic action engine from Phase 2 already handled invites; I kept them as regression tests.
+  Times now use 24-hour format (en-GB) to match the design. Readiness line, timeline and copy-link
+  are left for US6 (C4, C5, C8).
+- **Verified:** 82 tests passed at that point. In the browser at 1440 px: seed shows Filled 0/3 and
+  three Invite buttons; clicking Invite showed "Inviting…" (disabled), then "✓ Invite sent to
+  Youssef"; an accept sent with curl updated the row, Filled 1/3 and the bar without reload.
+
+### 2026-11-09 · US1 fixes · analyser, architect and reviewer agents + Claude
+- **Asked:** fix the weak spots I listed in my own US1 code, through three agents: an analyser to
+  find issues, an architect to implement, a reviewer to check the diff.
+- **Produced:** per-action in-flight tracking (no duplicate requests from fast clicks), a semantic
+  `<table>` with sticky name and action columns, a CSS-keyed row highlight instead of an effect and
+  two animation frames, `useNow` shared hook, "Today" label refreshed each minute, a client rule
+  that picks up a database reset without a reload, guarded snapshot parsing, an error boundary,
+  deterministic SSE repeat test, `formatTime`/`formatDay` tests.
+- **Changed or rejected:** the reviewer found that the reset rule could briefly show an older
+  snapshot over a newer one and contradicted the constitution; I tightened it (the first snapshot
+  of a connection must also be built no earlier than the held one), added a race test, amended the
+  constitution to 1.0.1 and the live-updates contract. Also from the review: a ping no longer marks
+  the connection Live before the first valid snapshot, the reduced-motion border moved onto the
+  overlay so it shows on all sides, the in-flight guard uses a ref, focus is kept after any invite
+  outcome, `formatTime` never throws, the test helper reports real stream errors. Removed the
+  leftover Sync Impact Report comment from the constitution.
+- **Found in the browser, missed by both agents:** the highlight overlay was an absolutely
+  positioned `<td>`; the browser wrapped it in an anonymous cell, creating a hidden 9th column
+  that took half the spare width. Replaced by a `::after` layer on each cell, restarted by
+  alternating two keyframe names (no remount, so keyboard focus is kept). Also gave the sticky
+  cells `z-10` (scrolled pills painted over the name) and narrowed the name column on phones.
+- **Verified:** typecheck, lint, 90 tests, build. Browser at 1440 px: three fast Invite clicks sent
+  exactly two invites (version 2, two success toasts, no "already" toast), focus moved to the name
+  cell, 8 columns with the name taking the spare width, an outside accept highlighted the whole
+  row. At 375 px: name and Invite stay sticky and on top while the middle scrolls.

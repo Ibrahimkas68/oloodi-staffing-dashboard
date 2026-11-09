@@ -1,16 +1,8 @@
-import { useEffect, useState } from 'react';
 import { formatTime } from '../lib/format.js';
 import { useLive } from '../lib/live.js';
+import { useNow } from '../lib/useNow.js';
 
-/** Re-renders every second so "synced Xs ago" stays true. */
-function useNow(intervalMs = 1_000): number {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), intervalMs);
-    return () => clearInterval(timer);
-  }, [intervalMs]);
-  return now;
-}
+const SYNC_LABEL_REFRESH_MS = 1_000;
 
 /**
  * C1 connection badge: filled pulsing dot (Live), half-filled dot (Reconnecting), hollow dot
@@ -18,7 +10,7 @@ function useNow(intervalMs = 1_000): number {
  */
 export function ConnectionBadge({ compact = false }: { compact?: boolean }) {
   const { status, lastSyncedAt } = useLive();
-  const now = useNow();
+  const now = useNow(SYNC_LABEL_REFRESH_MS);
   const size = compact ? 'h-7 px-[11px] text-[13px] gap-1.5' : 'h-[38px] px-4 text-[15px] gap-2';
   const dot = compact ? 'size-2' : 'size-[9px]';
 
@@ -41,7 +33,7 @@ export function ConnectionBadge({ compact = false }: { compact?: boolean }) {
         <span className={`rounded-pill border-[1.5px] border-shell-mid ${dot}`} aria-hidden="true" />
         <span className="font-semibold text-[#e8e9e4]">Offline</span>
         {lastSyncedAt && (
-          <span className="text-shell-mid">, data from {formatTime(new Date(lastSyncedAt).toISOString())}</span>
+          <span className="text-shell-mid">, data from {formatTime(lastSyncedAt)}</span>
         )}
       </>
     );
