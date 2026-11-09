@@ -79,6 +79,39 @@ covers it.
   three Invite buttons; clicking Invite showed "Inviting…" (disabled), then "✓ Invite sent to
   Youssef"; an accept sent with curl updated the row, Filled 1/3 and the bar without reload.
 
+### 2026-11-09 · US4 reliable actions and live connection (T057 to T065) · analyser, architect and reviewer agents + Claude
+- **Asked:** repeats, retries, concurrency, honest failures, offline indicator and automatic
+  catch-up. The analyser found T061 to T064 (banner, badge, mounting, "updated from another
+  session") already built; the work was tests, the two Playwright specs, the QA script, and
+  reliability fixes.
+- **Produced:** concurrency and health API tests, pool tests, retry tests for the API client,
+  Playwright specs (live sync across two browser sessions, offline recovery) with their own
+  database and port, `infra/scripts/qa-api.sh`, `docs/qa.md` with real results.
+- **Bugs found before any user would hit them:**
+  - The database pool had no error handler: when the database goes away, Node treats the idle
+    connection error as uncaught and kills the server (quickstart scenario 12). Fixed.
+  - Reviewer: the first fix (`query_timeout`) could leave a poisoned connection in the pool, and
+    errors on checked-out connections were still unhandled. Now a server-side `statement_timeout`,
+    a longer client-side backstop that destroys the connection, and an error listener on every
+    connection (each error reported once).
+  - Reviewer: the new `offline` listener stopped all reconnecting, so a false `offline` event with
+    a missed `online` would leave the page Offline until reload. Now the badge is held on Offline
+    but a slow 10 s probe keeps trying until a valid snapshot arrives.
+  - Reviewer: SSE could write to a response that was already ended (client left or shutdown while
+    the first snapshot loaded). Guarded and tested.
+- **Found by running, not reading:** the first Playwright run failed because the test compared
+  `innerText` with `textContent`. With the `offline` listener removed, the recovery test fails
+  (Chromium's offline switch does not close an open EventSource, the badge stays Live), so the
+  listener is needed and the test guards it.
+- **Reviewer nits fixed:** QA script refuses `QA_RESET=0` and a non-local `BASE_URL`, no longer
+  aborts on a failed burst request, exits cleanly on interrupt; e2e refuses a non-local database
+  host and no longer honours `BASE_URL`; the health stream test no longer passes vacuously.
+- **Decided against:** none. **Added:** task T086 (run e2e in a container for the handover), after
+  Ibrahim asked about delivering the project to another team.
+- **Verified:** typecheck, lint, 197 unit and API tests (52 shared, 82 server, 63 web), web build,
+  both Playwright tests 3 runs in a row (and 5 runs before the last fixes), QA script 34 of 34
+  including the database outage drill. Not done: the manual browser rows in `docs/qa.md`.
+
 ### 2026-11-09 · US3 check in and check out (T054 to T056) · analyser, architect and reviewer agents + Claude
 - **Asked:** a worker checks in and out; check-out is final; Filled does not change. The analyser
   found that the buttons, the final message and the recorded-time rows already existed from US2, so

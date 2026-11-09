@@ -97,12 +97,22 @@ function parseSnapshot(data: string): Snapshot | null {
   return null;
 }
 
+/**
+ * After the browser reports `offline`, how long to wait between quiet reconnect attempts. The
+ * `offline` event is only a hint (VPN switches, captive portals and sleep/wake can report it while
+ * the network works, or miss the matching `online`), so the client keeps probing instead of waiting
+ * for an event that may never come.
+ */
+export const OFFLINE_PROBE_MS = 10_000;
+
 let source: EventSource | null = null;
 let watchdog: ReturnType<typeof setTimeout> | undefined;
 let retryTimer: ReturnType<typeof setTimeout> | undefined;
 let attempt = 0;
 let errorCount = 0;
 let disconnectedAt: number | null = null;
+/** True from an `offline` event until a valid snapshot arrives or `online` fires. */
+let holdOffline = false;
 
 function armWatchdog() {
   clearTimeout(watchdog);
@@ -112,6 +122,7 @@ function armWatchdog() {
 
 function touch() {
   armWatchdog();
+  holdOffline = false;
   if (state.status !== 'live') {
     const recovery = disconnectedAt === null ? state.lastRecoveryMs : Date.now() - disconnectedAt;
     disconnectedAt = null;
@@ -125,7 +136,9 @@ function touch() {
 
 function markDisconnected(status: LiveStatus) {
   disconnectedAt ??= Date.now();
-  if (state.status !== status) setState({ status });
+  // While the browser says it is offline the badge stays Offline, even though quiet probes run.
+  const shown = holdOffline ? 'offline' : status;
+  if (state.status !== shown) setState({ status: shown });
 }
 
 function open() {
@@ -172,19 +185,39 @@ function restart() {
   open();
 }
 
+/** Losing the network: show Offline at once, then keep probing slowly in case the hint was wrong. */
+function goOffline() {
+  holdOffline = true;
+  clearTimeout(watchdog);
+  clearTimeout(retryTimer);
+  source?.close();
+  markDisconnected('offline');
+  // open() re-arms the watchdog, and a failed probe goes through the normal backoff, so the loop
+  // continues until a snapshot arrives (which clears the hold).
+  retryTimer = setTimeout(open, OFFLINE_PROBE_MS);
+}
+
+/** Coming back online: reconnect now instead of waiting for the next probe or backoff step. */
+function comeOnline() {
+  holdOffline = false;
+  attempt = 0;
+  errorCount = 0;
+  if (state.status !== 'live') restart();
+}
+
 let started = false;
-function start() {
+
+/** Opens the live connection (once). Called by the first component that subscribes. */
+export function startLive(): void {
   if (started) return;
   started = true;
   open();
-  // Coming back online: do not wait for the next backoff step.
-  window.addEventListener('online', () => {
-    if (state.status !== 'live') restart();
-  });
+  window.addEventListener('online', comeOnline);
+  window.addEventListener('offline', goOffline);
 }
 
 function subscribe(listener: () => void) {
-  start();
+  startLive();
   listeners.add(listener);
   return () => listeners.delete(listener);
 }

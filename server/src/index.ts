@@ -18,7 +18,9 @@ if (config.DATABASE_OWNER_URL && config.APP_DB_PASSWORD) {
   }
 }
 
-const db = createPool(config.DATABASE_URL);
+const db = createPool(config.DATABASE_URL, (error) =>
+  logger.error({ err: error }, 'database pool error on an idle connection'),
+);
 const service = createService(db, { demoMode: config.DEMO_MODE });
 const hub = createHub({
   maxClients: config.SSE_MAX_CLIENTS,

@@ -1,6 +1,12 @@
 # Quickstart: run and validate
 
-Target commands; they exist once the implementation tasks are done.
+Some commands below are targets. `npm run dev` (T078) and `docker compose up --build` (T077) do not exist
+yet. Until then, run the app like this (the database container must be up, for example
+`docker compose up -d db`):
+
+```bash
+npm run build -w @staffing/web && npm run start -w @staffing/server   # http://localhost:3000
+```
 
 ## Prerequisites
 
@@ -38,7 +44,7 @@ npm run measure   # 20 runs each: update delay and recovery time, median and max
 | 3 | Amina accepts, checks in, checks out | Dashboard updates live each time; Filled stays 1 after check-out; times recorded | US2, US3 |
 | 4 | Invite Youssef, he declines | Declined, no further actions; manager has no Invite for him | US2, A1 |
 | 5 | Invite Salma, accept, cancel, accept again | Filled 1 → 2 → 1 → 2 | US2 |
-| 6 | Double click Check in quickly | One check-in time; second response "already checked in" | US4 |
+| 6 | Double click Check in quickly | One check-in time. The UI sends one request, because the button is blocked while the first is pending; the "already checked in" answer of a second request is visible with `curl` or from two tabs | US4 |
 | 7 | `curl -X POST .../check-in` twice for the same id | `changed:true` then `changed:false`, same `checkedInAt` | US4 |
 | 8 | Check in after check-out | 409 with current state, clear message | US3, US4 |
 | 9 | Ids `abc`, `-1`, `999999` | 400, 400, 404; never 500 | US4 |

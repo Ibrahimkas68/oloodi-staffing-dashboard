@@ -82,13 +82,16 @@ const BANNER_SHAPE: Record<BannerLayout, { box: string; dot: string }> = {
  * no space) so the banner is announced when it appears.
  */
 export function OfflineBanner({ layout = 'desktop' }: { layout?: BannerLayout }) {
-  const { status } = useLive();
+  const { status, lastSyncedAt } = useLive();
   const paused = status !== 'live' && status !== 'connecting';
   const shape = BANNER_SHAPE[layout];
   return (
     <div role="status" className="contents">
       {paused && (
-        <div className={`flex gap-3 bg-banner text-banner-fg animate-fade ${shape.box}`}>
+        <div
+          data-testid="offline-banner"
+          className={`flex gap-3 bg-banner text-banner-fg animate-fade ${shape.box}`}
+        >
           <span
             aria-hidden="true"
             className={`size-3 shrink-0 rounded-pill border-2 border-banner-dot bg-[linear-gradient(90deg,var(--color-banner-dot)_50%,transparent_50%)] ${shape.dot}`}
@@ -96,6 +99,7 @@ export function OfflineBanner({ layout = 'desktop' }: { layout?: BannerLayout })
           <span>
             <strong className="font-semibold">Live updates paused. Reconnecting…</strong> Actions may fail until
             we're back.
+            {lastSyncedAt && ` Last update ${formatTime(lastSyncedAt)}.`}
           </span>
         </div>
       )}

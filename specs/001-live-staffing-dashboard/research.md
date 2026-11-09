@@ -30,15 +30,21 @@ Each entry: Decision, Rationale, Alternatives considered.
 
 ## R4. Concurrency and idempotency
 
-- **Decision**: One transaction per action: lock the shift row, conditional update on the
-  assignment, insert an event, increment `shifts.version`, commit, then broadcast.
-  Decision rule when the update affects 0 rows: re-read the assignment; if it is already in the
-  action's target state → `200 changed:false`; if the assignment does not exist → `404`; if Accept
-  would exceed required places → `409 SHIFT_FULL`; otherwise → `409 INVALID_TRANSITION` with the
-  current state.
+- **Decision**: One transaction per action. Order of steps: find the assignment (unknown id → `404`),
+  lock the shift row (`SELECT ... FOR UPDATE`), then read the assignment state. Only after the lock
+  is held, decide from the shared transition table (`applyAction`):
+  - already in the action's target state → `200 changed:false`, nothing written;
+  - not allowed from the current state → `409 INVALID_TRANSITION` with the current state;
+  - Accept when every required place is taken → `409 SHIFT_FULL`;
+  - otherwise run a guarded update (`WHERE id = $1 AND participation = <read> AND attendance =
+    <read>`), increment `shifts.version`, insert the event with that version, commit, then broadcast.
+  The guard is a safety net: the lock already makes the read stable, so a guarded update that
+  matches no row is treated as a bug, not as a normal outcome.
 - **Rationale**: The shift lock serializes changes per shift, so versions are strictly ordered and
-  the capacity check is race-free. The conditional update makes double clicks harmless and keeps
-  timestamps unchanged.
+  the capacity check is race-free. Deciding under the lock makes double clicks harmless and keeps
+  timestamps unchanged, and the same table decides in the server, the database guard and the UI.
+  Times use `clock_timestamp()` (the moment of the write, after the lock), so a request that waited
+  on the lock never gets a time older than the change it followed.
 - **Alternatives**: Optimistic locking with retries (more client logic), idempotency keys (not
   needed when the target state itself identifies a repeat), serializable isolation everywhere
   (retries on serialization failures).
@@ -62,7 +68,10 @@ Each entry: Decision, Rationale, Alternatives considered.
 - **Decision**: `live.ts` exposes `status` (live, reconnecting, offline), `lastSyncedAt` and
   `snapshot`. Version guard: apply a snapshot only if `version > current`. Watchdog: no snapshot or
   ping for 35 s → close and reconnect. If the stream closes for good (error status), reconnect
-  manually with backoff 1 s, 2 s, 4 s, max 10 s.
+  manually with backoff 1 s, 2 s, 4 s, max 10 s. The browser's `offline` event shows Offline at
+  once but never stops the reconnecting: a slow probe (10 s) continues until a valid snapshot
+  arrives, because the event is only a hint and its matching `online` can be missed. The `online`
+  event reconnects immediately.
 - **Rationale**: The version guard covers both SSE and HTTP responses, so a late response never
   overwrites newer state. The watchdog catches silent dead connections.
 - **Alternatives**: Trust `EventSource` alone (stops for good on HTTP errors, misses half-open

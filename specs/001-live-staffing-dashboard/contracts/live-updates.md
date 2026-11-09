@@ -35,6 +35,12 @@ Ordering: snapshots carry `version`; versions increase strictly with commits (sh
   the first valid snapshot.
 - Watchdog: no `snapshot` or `ping` for 35 s → close and reconnect.
 - Closed stream (error status such as 503): reconnect manually with backoff 1 s, 2 s, 4 s, max 10 s.
+- Browser `offline` event: show `offline` at once and close the stream, but keep probing quietly
+  every 10 s. The event is only a hint (VPN switches, captive portals and sleep/wake can report it
+  while the network works, or miss the matching `online`), so recovery must not depend on it. The
+  badge stays `offline` while probes fail; the first valid snapshot makes it `live` again.
+- Browser `online` event: reconnect immediately, reset the backoff, show `reconnecting` until a
+  valid snapshot arrives.
 - Catch-up: the first event of every connection is a full snapshot; no replay of missed events.
 
 ## Known limits

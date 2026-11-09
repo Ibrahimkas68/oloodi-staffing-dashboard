@@ -10,25 +10,35 @@ import { resetDatabase } from '../src/db/reset.js';
 import { createService } from '../src/service.js';
 import { createHub } from '../src/sse.js';
 
-/** Builds a full app against the test database and resets it before each test. */
-export function setupTestApp() {
+/** Builds a full app on its own pool for `databaseUrl`. The caller decides when to close it. */
+export function buildTestApp(databaseUrl: string) {
   const config = loadConfig();
   const logger = pino({ level: 'silent' });
-  const db = createPool(config.DATABASE_URL);
+  const db = createPool(databaseUrl, () => undefined);
   const service = createService(db, { demoMode: config.DEMO_MODE });
   const hub = createHub({ maxClients: 5, pingMs: config.SSE_PING_MS, loadSnapshot: service.getSnapshot, logger });
   const app = createApp({ service, hub, logger, rateLimitPerMinute: config.RATE_LIMIT_PER_MINUTE });
+
+  async function close() {
+    hub.stop();
+    await db.end();
+  }
+
+  return { app, db, service, hub, close };
+}
+
+/** Builds a full app against the test database and resets it before each test. */
+export function setupTestApp() {
+  const config = loadConfig();
+  const testApp = buildTestApp(config.DATABASE_URL);
 
   beforeEach(async () => {
     await resetDatabase(config.DATABASE_OWNER_URL!, config.APP_DB_PASSWORD!);
   });
 
-  afterAll(async () => {
-    hub.stop();
-    await db.end();
-  });
+  afterAll(testApp.close);
 
-  return { app, db, service, hub };
+  return testApp;
 }
 
 /** Opens a real SSE connection and collects `snapshot` events. */

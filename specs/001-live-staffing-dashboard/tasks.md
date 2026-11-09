@@ -37,7 +37,7 @@ actions, tests and screens.
 - [x] T005 [P] Create `shared/package.json` (name `@staffing/shared`, depends on `zod`) with Vitest config in `shared/vitest.config.ts`
 - [x] T006 [P] Create `server/package.json` (express@5, pg, zod, pino, pino-http, helmet, express-rate-limit; dev: vitest, supertest, tsx, @types/*) and `server/vitest.config.ts` (sequential runs, global setup that resets the test database)
 - [x] T007 [P] Scaffold `web/` with Vite + React 18 + TypeScript, add Tailwind CSS and `motion`, proxy `/api` to `http://localhost:3000` in `web/vite.config.ts`
-- [x] T008 [P] Create `e2e/package.json` with Playwright and `e2e/playwright.config.ts` (baseURL `http://localhost:3000`, Chromium)
+- [x] T008 [P] Create `e2e/package.json` with Playwright and `e2e/playwright.config.ts` (baseURL `http://localhost:3100`, Chromium; a `webServer` builds and starts the app on port 3100 against a dedicated `staffing_e2e` database)
 - [x] T009 Create `infra/docker/docker-compose.yml` with service `db` (postgres:16, port `127.0.0.1:5432:5432`, named volume, healthcheck `pg_isready`) and service `app` (build context `../..`, dockerfile `infra/docker/Dockerfile`, `env_file` `../../.env`, depends on healthy db, port 3000); create root `compose.yaml` containing only `include: [infra/docker/docker-compose.yml]` so `docker compose up --build` works from the root
 - [x] T010 [P] Create `.env.example` documenting `DATABASE_URL` (staffing_app), `DATABASE_OWNER_URL` (staffing_owner), `PORT=3000`, `DEMO_MODE=false`, `LOG_LEVEL=info`, `SSE_MAX_CLIENTS=100`
 - [x] T011 [P] Create `README.md` skeleton with headings: Setup, Reset, Architecture and design, Technology choices, Testing and measurements, Challenges and learnings, Limitations and improvements, AI usage
@@ -73,7 +73,7 @@ actions, tests and screens.
 - [x] T024 [P] Implement `server/src/errors.ts`: `DomainError` with codes `VALIDATION_ERROR` 400, `NOT_FOUND` 404, `INVALID_TRANSITION` 409, `SHIFT_FULL` 409, `RATE_LIMITED` 429, `INTERNAL` 500, and the error middleware producing `{error:{code,message,current},requestId}` with no stack trace in the body
 - [x] T025 Implement `server/src/app.ts` with middleware in this order: request id (reuse `X-Request-Id` or generate, echo it), pino-http, helmet (CSP `default-src 'self'`, `connect-src 'self'`), express-rate-limit on POST routes only, `express.json({limit:'10kb'})`, `Cache-Control: no-store` on `/api`, routes, 404 handler, error handler
 - [x] T026 Implement `server/src/repository.ts` with parameterized SQL only: `getSnapshot(client)` (shift, assignments joined with workers, last 20 events newest first) and `toSnapshot(rows)` mapping snake_case to camelCase and timestamps to ISO strings, never returning `updated_at`
-- [x] T027 Implement `server/src/service.ts` `runAction(assignmentId, action, actor)`: BEGIN; `SELECT ... FROM shifts ... FOR UPDATE`; for accept when not already accepted, count accepted and throw `SHIFT_FULL` if `>= required_workers`; conditional `UPDATE ... WHERE id = $1 AND <allowed> RETURNING`; on 0 rows apply the decision rule from contracts/rest-api.md (404, `changed:false`, or 409 with current state) and ROLLBACK; else bump `shifts.version`, insert the event with that version, COMMIT; return `{changed, snapshot}`
+- [x] T027 Implement `server/src/service.ts` `runAction(assignmentId, action, actor)`: BEGIN; `SELECT ... FROM shifts ... FOR UPDATE`; for accept when not already accepted, count accepted and throw `SHIFT_FULL` if `>= required_workers`; conditional `UPDATE ... WHERE id = $1 AND <allowed> RETURNING`; decide first from the transition table after the lock (404, `changed:false`, or 409 with current state, no write), then run the guarded update; bump `shifts.version`, insert the event with that version, COMMIT; return `{changed, snapshot}`
 - [x] T028 Implement `server/src/sse.ts` hub: on connect check `SSE_MAX_CLIENTS` (503 above), register client, write `retry: 2000`, then `event: snapshot`; `broadcast(snapshot)`; `event: ping` with `{serverTime}` every 15 s; remove on close; `closeAll()` for shutdown
 - [x] T029 Implement `server/src/routes/state.ts`: `GET /api/state` (snapshot) and `GET /api/events` (SSE hub)
 - [x] T030 Implement `server/src/routes/assignments.ts`: `POST /api/assignments/:id/:action` with zod (`id` positive integer, action in the route map `invite|accept|decline|cancel|check-in|check-out`, unknown action → 404), actor `manager` for invite and `worker` otherwise; call `runAction`, then `broadcast` when `changed`
@@ -169,18 +169,18 @@ actions, tests and screens.
 
 ### Tests for User Story 4
 
-- [ ] T057 [P] [US4] Concurrency test in `server/tests/api/concurrency.test.ts`: 10 parallel identical check-ins → exactly 1 `changed:true`, 9 `changed:false`, 1 event, 1 `checkedInAt`; parallel cancel and check-in on the same assignment → exactly one applied, the other 200 `changed:false` or 409, final state valid; versions in events are strictly increasing; check-in racing check-out on the same accepted worker → check-out 409 with check-in 200, or both 200, never 500
-- [ ] T058 [P] [US4] API test in `server/tests/api/health.test.ts`: health 200 with DB up; with the pool pointed at a stopped or wrong DB, health 503 and an action returns 500 `INTERNAL` with no stack in the body
-- [ ] T059 [P] [US4] Playwright test in `e2e/tests/live-sync.spec.ts`: manager and worker in two browser contexts; invite, accept, check in, check out; manager shows each change without reload; reload both pages and verify identical statuses and times
-- [ ] T060 [P] [US4] Playwright test in `e2e/tests/recovery.spec.ts`: set the manager context offline, act from the worker context, verify the offline indicator, set online, verify the dashboard shows the new state without reload
+- [x] T057 [P] [US4] Concurrency test in `server/tests/api/concurrency.test.ts`: 10 parallel identical check-ins → exactly 1 `changed:true`, 9 `changed:false`, 1 event, 1 `checkedInAt`, one broadcast; parallel cancel and check-in on the same assignment → always exactly one 200 `changed:true` and one 409 `INVALID_TRANSITION` (neither is the other's target state), final state valid; versions in events are exactly 1..n; check-in racing check-out on the same accepted worker → check-in 200, check-out 200 or 409, never 500
+- [x] T058 [P] [US4] API test in `server/tests/api/health.test.ts`: health 200 with DB up; with the pool pointed at a stopped or wrong DB, health 503 and an action returns 500 `INTERNAL` with no stack in the body
+- [x] T059 [P] [US4] Playwright test in `e2e/tests/live-sync.spec.ts`: manager and worker in two browser contexts; invite, accept, check in, check out; manager shows each change without reload; reload both pages and verify identical statuses and times
+- [x] T060 [P] [US4] Playwright test in `e2e/tests/recovery.spec.ts`: `context.setOffline(true)` on the manager; the `offline` listener in `web/src/lib/live.ts` makes the app react at once, so the test does not depend on Chromium closing the open stream; act from the worker context, verify the offline indicator and banner, set online, verify Live within 15 s and the new state without reload
 
 ### Implementation for User Story 4
 
-- [ ] T061 [P] [US4] Implement `OfflineBanner` in `web/src/components/Connection.tsx`: shown when `status !== 'live'`, text "Live updates paused. Reconnecting… Actions may fail until we're back." with the last sync time
-- [ ] T062 [P] [US4] Implement `ConnectionBadge` (C1) in `web/src/components/Connection.tsx`: "● Live · synced Xs ago", "◐ Reconnecting…", "○ Offline, data from HH:MM"
-- [ ] T063 [US4] Mount OfflineBanner and ConnectionBadge in `web/src/App.tsx` for both views
-- [ ] T064 [US4] Implement C7 in `web/src/pages/Worker.tsx`: when a snapshot changes the selected worker and the change was not this tab's own pending action, show "Updated from another session"
-- [ ] T065 [US4] Write `infra/scripts/qa-api.sh` (curl every endpoint, repeat actions, bad ids, `curl -I` headers) and record results of quickstart.md scenarios 1 to 13 and 15 in `docs/qa.md`
+- [x] T061 [P] [US4] Implement `OfflineBanner` in `web/src/components/Connection.tsx`: shown while live updates are down, text "Live updates paused. Reconnecting… Actions may fail until we're back." followed by "Last update HH:MM." when a sync time is known (FR-024)
+- [x] T062 [P] [US4] Implement `ConnectionBadge` (C1) in `web/src/components/Connection.tsx`: "● Live · synced Xs ago", "◐ Reconnecting…", "○ Offline, data from HH:MM"
+- [x] T063 [US4] Mount OfflineBanner and ConnectionBadge in `web/src/pages/Manager.tsx` and `web/src/pages/Worker.tsx` (both views)
+- [x] T064 [US4] Implement C7: logic in `web/src/lib/live.ts` (`remoteVersion`, `trackLocalRequest`) and `web/src/lib/remoteChange.ts`, UI in `web/src/components/RemoteChangeNotice.tsx`: when a snapshot changes the selected worker and the change was not this tab's own pending action, show "Updated from another session"
+- [x] T065 [US4] Write `infra/scripts/qa-api.sh` (curl every endpoint, repeat actions, bad ids, `curl -I` headers) and record results of quickstart.md scenarios 1 to 13 and 15 in `docs/qa.md` (API part run by the script; browser-only scenarios listed as manual checks)
 
 **Checkpoint**: All P1 stories done; `npm test` and `npm run e2e` green. This is the deliverable core.
 
@@ -192,7 +192,7 @@ actions, tests and screens.
 
 **Independent Test**: `npm run measure` prints median and max for 20 runs of each, plus environment.
 
-- [ ] T066 [US5] Implement `e2e/measure.ts`: 20 runs of update delay (worker click → manager DOM shows the change, both timestamps from the same Playwright clock) and 20 runs of recovery time (end of a 5 s outage via `/api/demo/outage` or context offline → manager shows the correct version); print median, max, machine, OS, browser
+- [ ] T066 [US5] Implement `e2e/measure.ts`: 20 runs of update delay (worker click → manager DOM shows the change, both timestamps from the same Playwright clock) and 20 runs of recovery time (end of a 5 s outage via `/api/demo/outage` or, until T068 exists, `context.setOffline(false)` after 5 s as in T060 → manager shows the correct version); print median, max, machine, OS, browser
 - [ ] T067 [US5] Record the measured results and method in `docs/measurements.md` (no estimates, only real runs)
 
 ---
@@ -225,6 +225,7 @@ actions, tests and screens.
 - [ ] T082 Fill `README.md` (linking to `infra/README.md` for deployment): setup, reset, endpoint table with error codes, architecture and state diagrams (Mermaid), technology choices with alternatives, testing and measurements, challenges and learnings, limitations (no auth: anyone with the URL can act as any worker; single process hub; no delivery guarantee), improvements, demo mode, AI usage
 - [ ] T083 [P] Optional (P2): generate `openapi.json` from the zod schemas with `@asteasolutions/zod-to-openapi` and serve it at `/api/docs`
 - [ ] T084 Complete `AI_LOG.md` with what was accepted, corrected and rejected
+- [ ] T086 [P2] Handover: run the e2e tests in a container, so the receiving team needs no local Node or browser install. A compose profile `e2e` in `infra/docker/` using the official Playwright image pinned to the version in `package-lock.json`, its own compose project and a throwaway database (never the demo data), started with `docker compose --profile e2e up --abort-on-container-exit --exit-code-from e2e`. Depends on T077 (the app image). `e2e/env.ts` currently allows only a local database host; the container needs the compose database host allowed explicitly. Document it in `infra/README.md`
 - [ ] T085 Clean clone test: fresh folder, follow only the README, `docker compose up --build`, run quickstart.md scenarios; then re-read the brief and tick every requirement
 
 ---

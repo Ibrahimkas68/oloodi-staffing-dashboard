@@ -40,7 +40,7 @@ Spec entities: Shift, Worker, Assignment, Activity event (spec "Key Entities").
 | updated_at | timestamptz | internal, not sent to clients |
 
 Note on `responded_at`: set on Accept, Decline and Cancel. A repeat of the same action never changes
-it (the conditional update does not match). Accept again after Cancel sets a new `responded_at`,
+it (the transition table sees the target state and nothing is written). Accept again after Cancel sets a new `responded_at`,
 which is a real new response, not a repeat.
 
 ### events (append-only)

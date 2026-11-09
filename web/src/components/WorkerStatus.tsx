@@ -57,7 +57,7 @@ export function RecordedTimes({ assignment, className = '' }: { assignment: Assi
   const times = recordedTimes(assignment);
   if (times.length === 0) return null;
   return (
-    <section className={`flex flex-col gap-2 px-1 pt-1 ${className}`}>
+    <section data-testid="recorded-times" className={`flex flex-col gap-2 px-1 pt-1 ${className}`}>
       <h2 className="m-0 text-[13px] font-medium text-mid">Recorded times</h2>
       <dl className="m-0 flex flex-col gap-2">
         {times.map(({ label, iso }) => (

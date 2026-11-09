@@ -62,7 +62,7 @@ describe('input validation and error format', () => {
   });
 });
 
-describe('state and health', () => {
+describe('state', () => {
   it('returns the seed snapshot', async () => {
     const res = await request(app).get('/api/state');
     expect(res.status).toBe(200);
@@ -73,11 +73,5 @@ describe('state and health', () => {
       recentEvents: [],
     });
     expect(res.body.assignments).toHaveLength(3);
-  });
-
-  it('reports a healthy database', async () => {
-    const res = await request(app).get('/api/health');
-    expect(res.status).toBe(200);
-    expect(res.body).toEqual({ status: 'ok', db: 'ok' });
   });
 });

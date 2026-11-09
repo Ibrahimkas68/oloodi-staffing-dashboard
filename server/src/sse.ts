@@ -53,7 +53,11 @@ export function createHub({ maxClients, pingMs, loadSnapshot, logger }: Options)
     req.on('close', () => clients.delete(res));
 
     try {
-      write(res, 'snapshot', await loadSnapshot());
+      const snapshot = await loadSnapshot();
+      // The client may have left, or the hub may have stopped, while the snapshot was loading.
+      // Writing to an ended response would raise an unhandled error.
+      if (!clients.has(res)) return;
+      write(res, 'snapshot', snapshot);
     } catch (err) {
       logger.error({ err }, 'could not load the initial snapshot');
       clients.delete(res);
