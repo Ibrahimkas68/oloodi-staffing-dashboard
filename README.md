@@ -131,6 +131,20 @@ commit, plus a named `ping` every 15 s. The client applies a snapshot only if it
 runs a 35 s watchdog, reconnects with backoff (1, 2, 4, then 10 s), and every reconnect starts with a
 full snapshot, so there is no missed-event logic.
 
+### Data model
+
+Four tables, plain SQL ([schema.sql](server/db/schema.sql)):
+
+- `shifts`: title, location, start and end, `required_workers`, and a `version` that grows by one on every change.
+- `workers`: id and full name.
+- `assignments`: one row per worker and shift, holding the `participation` and `attendance` columns and
+  the five timestamps (`invited_at`, `responded_at`, `cancelled_at`, `checked_in_at`, `checked_out_at`).
+- `events`: an append-only log of every applied action, one row per version.
+
+The database enforces the rules, not only the code: CHECK constraints tie each timestamp to its
+status, attendance can exist only for an accepted worker, a worker has one assignment per shift, and
+the app's database role cannot delete or alter rows in `events`.
+
 ### API
 
 All paths are under `/api`, JSON only, and every response carries `Cache-Control: no-store` and an
@@ -195,6 +209,16 @@ GitHub Actions runs typecheck, lint, tests against a `postgres:16` service, `npm
 the image build and the e2e tests on every push to `develop` and `main`. A manual QA script
 (`infra/scripts/qa-api.sh`) checks the API with curl, results in [docs/qa.md](docs/qa.md).
 
+What each kind of test covers:
+
+| Brief asks for                         | Where it is tested                                                                                                                                                                        |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Status transitions and illegal actions | `shared/tests/transitions.test.ts` (every cell of the transition table), `server/tests/api/{invite,respond,attendance}.test.ts` on a real database                                        |
+| Counts agree with the worker list      | `shared/tests/counts.test.ts`, and the counts returned by every API test                                                                                                                  |
+| Repeated actions and races             | idempotent repeats in the API tests, `concurrency.test.ts` (parallel requests, last place), `shift-full.test.ts`                                                                          |
+| Bad input and errors                   | `errors.test.ts` (ids like `abc`, `-1`, unknown), the error format and codes                                                                                                              |
+| Live updates and connection recovery   | `sse.test.ts`, `sse-hub.test.ts`, the web live-layer tests, and Playwright (`e2e/tests`): live sync between two sessions, and a session that goes offline and catches up without a reload |
+
 **Measurements.** Update delay is the time from a worker's click to the manager's page showing the
 change, both clocks read in the browser. Recovery is the time from the end of an outage to the correct
 state on screen. Method, definitions, every run and the limits are in
@@ -212,6 +236,22 @@ samples per setup, none failed):
 Both targets are met (median update delay under 1 s, recovery under 15 s). These numbers are for
 loopback, emulated network loss and a three-worker dashboard, on a machine that was not idle. They say
 nothing about a real network, a mobile device or silent connection drops.
+
+## Creativity
+
+Beyond the brief, and each one removable without touching the core flow:
+
+- **Own visual design** (from a Claude Design export): a state sheet for every status, so a worker
+  always sees only the actions that are allowed, and a connection badge (live, reconnecting, offline).
+- **Readiness sentence:** "2 of 3 places filled, starts in 1h 59min, Salma accepted, not checked in
+  yet", so the manager reads the situation without adding up the table.
+- **Activity timeline:** the event log shown as "21:06 Amina checked in", which makes live changes
+  easy to follow during a demo.
+- **Remote change notice:** when a worker's state changes from another session, their own screen says
+  so instead of silently changing.
+- **Demo mode and metrics card:** the burst and outage buttons show the reliability rules working
+  (one change from ten clicks, recovery after an outage), and the card shows client-side timings.
+- **Copy worker link:** one click gives the manager the worker's address for a phone.
 
 ## Challenges and learnings
 
@@ -261,6 +301,8 @@ machine. What was accepted, corrected and rejected, story by story, is in
 [AI_LOG.md](AI_LOG.md). Each user story went through an analysis, a design and a review pass before it
 was committed, one commit per story.
 
-The specification, plan, research, data model, contracts and tasks are in
-[specs/001-live-staffing-dashboard](specs/001-live-staffing-dashboard). The project rules are in
+My own research before building, the cahier des charges and the log of every question and
+decision, is in [docs/planning](docs/planning): [cahier des charges](docs/planning/cahier-des-charges.md)
+and [decisions log](docs/planning/decisions-log.md). The specification, plan, research, data model,
+contracts and tasks are in [specs/001-live-staffing-dashboard](specs/001-live-staffing-dashboard). The project rules are in
 [.specify/memory/constitution.md](.specify/memory/constitution.md).

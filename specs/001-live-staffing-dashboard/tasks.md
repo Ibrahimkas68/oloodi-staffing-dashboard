@@ -224,9 +224,9 @@ actions, tests and screens.
 - [x] T081 Search `web/` for `dangerouslySetInnerHTML` (must be zero, copied beUI components included) and confirm security headers with `curl -I http://localhost:3000/api/state`
 - [x] T082 Fill `README.md` (linking to `infra/README.md` for deployment): setup, reset, endpoint table with error codes, architecture and state diagrams (Mermaid), technology choices with alternatives, testing and measurements, challenges and learnings, limitations (no auth: anyone with the URL can act as any worker; single process hub; no delivery guarantee), improvements, demo mode, AI usage
 - [x] T083 [P] Optional (P2): generate `openapi.json` from the zod schemas with `@asteasolutions/zod-to-openapi` and serve it at `/api/docs`
-- [ ] T084 Complete `AI_LOG.md` with what was accepted, corrected and rejected
+- [x] T084 Complete `AI_LOG.md` with what was accepted, corrected and rejected
 - [x] T086 [P2] Handover: run the e2e tests in a container, so the receiving team needs no local Node or browser install. A separate compose file `infra/docker/docker-compose.e2e.yml` (its own project `staffing-e2e`, a profile cannot set its own project name) using the official Playwright image pinned to the version in `package-lock.json` (`infra/docker/Dockerfile.e2e`), a throwaway in-memory database (never the demo data) and no published ports, started with `docker compose -f infra/docker/docker-compose.e2e.yml up --build --abort-on-container-exit --exit-code-from e2e` (wrapped by `npm run e2e:docker`). Depends on T077 (the app image). `e2e/env.ts` gets an external mode: `E2E_BASE_URL` and `E2E_DB_HOST` must be set together or not at all; the database host allowlist is localhost plus exactly `E2E_DB_HOST`, and the app URL must be localhost or a single-label compose service name. Document it in `infra/README.md`
-- [ ] T085 Clean clone test: fresh folder, follow only the README, `docker compose up --build`, run quickstart.md scenarios; then re-read the brief and tick every requirement
+- [x] T085 Clean clone test: fresh folder, follow only the README, `docker compose up --build`, run quickstart.md scenarios; then re-read the brief and tick every requirement
 
 ---
 
