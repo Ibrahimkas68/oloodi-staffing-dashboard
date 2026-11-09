@@ -118,3 +118,29 @@ export function e2eEnvironment(database: E2eDatabase = e2eDatabase()): Record<st
     APP_DB_PASSWORD: database.appPassword,
   };
 }
+
+/**
+ * One command, in order: the database must exist before the server starts, and the web app must be
+ * built before the server can serve it. Shared by the Playwright config and `npm run measure`, so
+ * both always start the app the same way.
+ */
+export const START_APP = [
+  'npx tsx e2e/prepare-db.ts',
+  'npm run build -w @staffing/web',
+  'npm run start -w @staffing/server',
+].join(' && ');
+
+/**
+ * Environment of the app server this target starts (local mode): the e2e database, a port that is
+ * not the dev server's, quiet logs, and a rate limit high enough that nothing throttles a test or a
+ * measurement.
+ */
+export function serverEnvironment(database: E2eDatabase = e2eDatabase()): Record<string, string> {
+  return {
+    ...e2eEnvironment(database),
+    PORT: String(E2E_PORT),
+    LOG_LEVEL: 'warn',
+    RATE_LIMIT_PER_MINUTE: '10000',
+    DEMO_MODE: 'false',
+  };
+}

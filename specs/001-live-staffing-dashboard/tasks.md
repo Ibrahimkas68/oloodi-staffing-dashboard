@@ -190,10 +190,10 @@ actions, tests and screens.
 
 **Goal**: Repeatable measurements with median and max.
 
-**Independent Test**: `npm run measure` prints median and max for 20 runs of each, plus environment.
+**Independent Test**: `npm run measure` prints median and max for 20 runs of each, plus environment, and writes the raw samples.
 
-- [ ] T066 [US5] Implement `e2e/measure.ts`: 20 runs of update delay (worker click → manager DOM shows the change, both timestamps from the same Playwright clock) and 20 runs of recovery time (end of a 5 s outage via `/api/demo/outage` or, until T068 exists, `context.setOffline(false)` after 5 s as in T060 → manager shows the correct version); print median, max, machine, OS, browser
-- [ ] T067 [US5] Record the measured results and method in `docs/measurements.md` (no estimates, only real runs)
+- [x] T066 [US5] Implement `e2e/measure.ts` (with `e2e/measure/*`, `e2e/stats.ts` and the unit test `e2e/unit/stats.test.ts`): 20 measured runs of update delay (worker click to manager DOM showing the change) and 20 measured runs of recovery time, each after 6 warm-up runs that are kept in the output but not counted, with no database reset between runs. Both timestamps come from the same system clock via `Date.now()` taken inside each page (not a shared Playwright clock). Recovery uses `context.setOffline` on the manager for 5 s (under the client's 10 s probe) and means: the participation cell shows the new state AND the connection badge is Live; `/api/demo/outage` is not needed and stays a separate optional variant after T068. Shared server start and environment moved to `e2e/env.ts`, and the reset and wait helpers to `e2e/db.ts` and `e2e/live.ts`, so the Playwright config and the measurement cannot drift. Runs on the host (`npm run measure`) and in the e2e container (`npm run measure:docker`); prints median, p95, max, machine, OS, browser and the SC-005 / SC-006 verdicts, and writes every sample to `e2e/measure-results/<mode>-<ISO>.json`
+- [ ] T067 [US5] Record the method and the measured results for the host run and the Docker run in `docs/measurements.md` (no estimates, only real runs), and commit the raw JSON files it cites in `docs/measurements/`
 
 ---
 
@@ -237,7 +237,7 @@ actions, tests and screens.
 - **Setup (Phase 1)**: none
 - **Foundational (Phase 2)**: depends on Setup; blocks all stories
 - **US1, US2, US3, US4 (P1)**: depend on Foundational; best done in order US1 → US2 → US3 → US4 by one developer, but each is testable on its own because the action engine is shared
-- **US5 (P2)**: depends on US1 to US4 (needs live sync and recovery); recovery runs use T068 if available, otherwise Playwright offline mode
+- **US5 (P2)**: depends on US1 to US4 (needs live sync and recovery); recovery uses Playwright offline mode (`setOffline`), so T068 is not needed
 - **US6 (P3)**: depends on Foundational; C2 to C8 can be built in any order after US4
 - **Polish**: T077 to T080 can start after Foundational; T082, T084, T085 last
 

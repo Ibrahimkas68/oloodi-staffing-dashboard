@@ -1,9 +1,6 @@
-import { execFileSync } from 'node:child_process';
 import { expect, test as base, type Page } from '@playwright/test';
-import { e2eEnvironment, REPO_ROOT } from './env.js';
-
-/** Seed ids: 1 Amina El Idrissi, 2 Youssef, 3 Salma. The assignment id equals the worker id. */
-export const AMINA = 1;
+import { AMINA, resetDatabase } from './db.js';
+import { waitLive } from './live.js';
 
 type Fixtures = {
   /** Resets the e2e database before every test. */
@@ -13,16 +10,6 @@ type Fixtures = {
   /** The worker view for Amina, in a second browser context (a different "device"). */
   worker: Page;
 };
-
-function resetDatabase(): void {
-  const env = e2eEnvironment();
-  // The owner URL is used for the reset; process.env values win over .env in the script.
-  execFileSync('sh', ['infra/scripts/reset-db.sh'], {
-    cwd: REPO_ROOT,
-    env: { ...process.env, ...env },
-    stdio: 'pipe',
-  });
-}
 
 export const test = base.extend<Fixtures>({
   freshDatabase: [
@@ -52,7 +39,5 @@ export const test = base.extend<Fixtures>({
 
 export { expect };
 
-/** Waits until the page's connection badge says Live, meaning the snapshot has arrived. */
-export async function waitLive(page: Page, timeout = 15_000): Promise<void> {
-  await expect(page.getByTestId('connection-status')).toHaveAttribute('data-status', 'live', { timeout });
-}
+// Specs import everything they need from here.
+export { AMINA, waitLive };

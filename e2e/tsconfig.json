@@ -5,5 +5,5 @@
     "types": ["node"],
     "noEmit": true
   },
-  "include": ["tests", "*.ts"]
+  "include": ["tests", "unit", "measure", "*.ts"]
 }

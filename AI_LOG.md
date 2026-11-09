@@ -79,6 +79,29 @@ covers it.
   three Invite buttons; clicking Invite showed "Inviting…" (disabled), then "✓ Invite sent to
   Youssef"; an accept sent with curl updated the row, Filled 1/3 and the bar without reload.
 
+### 2026-11-09 · US5 measurement tooling (T066) · analyser, architect and reviewer agents + Claude
+- **Asked:** a repeatable way to measure update delay and reconnection recovery time, with no
+  estimated numbers anywhere (constitution principle VI).
+- **Produced:** `e2e/measure.ts` and `e2e/measure/*` (one small module per concern), `e2e/stats.ts`,
+  `docs/measurements.md` (method, definitions, limitations; results still to be filled from real
+  runs), a `measure` service in the e2e compose file, `npm run measure` and `measure:docker`.
+- **Method decided with the analyser:** timestamps are `Date.now()` taken inside each page (not around
+  Playwright calls); the worker alternates "Cancel my spot" and "Accept again" so no database reset is
+  needed between runs; 6 warm-up runs are kept but never counted; failed runs are recorded, never
+  dropped. Recovery is timed from restoring the network to the manager showing the new state with a
+  Live badge. Chromium does fire the `online` event on `setOffline(false)` (seen in the smoke runs).
+- **Reviewer findings fixed:** the SC-005 verdict ignored failed runs (8 timeouts of 20 could still
+  read "met"; now a test covers it); any exception threw away every sample (now the samples taken so
+  far are written and marked aborted, exit code 1); the server stop had no SIGKILL fallback and did
+  not handle closing the terminal; recovery had no negative-time check; a failing `git status` read as
+  a clean tree; an observer leaked after a timeout; the docs now state the emulated-network limit.
+- **Verified:** 209 unit and API tests (16 of them in e2e: statistics and verdict logic), typecheck,
+  lint, local e2e, compose config. Two smoke runs with tiny settings, deleted afterwards and not quoted
+  anywhere: a normal one, and one with a temporarily sabotaged recovery run to prove the abort path
+  (file restored byte for byte).
+- **Not yet:** the official runs. They must happen on a committed tree so the raw data records the
+  commit, with the machine plugged in.
+
 ### 2026-11-09 · Docker image and e2e container (T077, T086) · analyser, architect and reviewer agents + Claude
 - **Asked:** a production image that `docker compose up --build` starts from a clean clone, and an
   e2e container so the team receiving the project needs no local Node or browser install.

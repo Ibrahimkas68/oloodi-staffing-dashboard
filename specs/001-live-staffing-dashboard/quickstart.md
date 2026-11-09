@@ -18,6 +18,7 @@ npm run build -w @staffing/web && npm run start -w @staffing/server   # http://l
 docker compose up --build        # db + app, http://localhost:3000 (root compose.yaml includes infra/docker/docker-compose.yml)
 npm run db:reset                 # back to the seed state (infra/scripts/reset-db.sh)
 npm run e2e:docker               # e2e tests in containers, throwaway database (infra/docker/docker-compose.e2e.yml)
+npm run measure:docker           # the measurement in containers (container numbers, see docs/measurements.md)
 npm run dev                      # development: db in Docker, server and web with hot reload (infra/scripts/dev.sh)
 ```
 
@@ -32,7 +33,7 @@ All infrastructure files (Docker, Caddy, shell scripts, deployment guide) are in
 ```bash
 npm test          # unit (transition table, counts) + API, concurrency, constraints on real Postgres
 npm run e2e       # Playwright: two sessions, live sync, refresh, outage recovery
-npm run measure   # 20 runs each: update delay and recovery time, median and max
+npm run measure   # 20 measured runs each: update delay and recovery time, median and max, raw samples in e2e/measure-results/
 ```
 
 ## Manual validation scenarios

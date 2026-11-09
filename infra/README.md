@@ -13,7 +13,7 @@ Everything about running and packaging the app lives here. The root `compose.yam
 | `docker/docker-compose.e2e.yml` | End-to-end tests in containers, with a throwaway database. |
 | `scripts/reset-db.sh` | Drop, recreate and seed the database (`npm run db:reset`). |
 | `scripts/qa-api.sh` | Manual API checks with curl. |
-| `scripts/e2e-docker.sh` | Runs the e2e containers and always cleans up (`npm run e2e:docker`). |
+| `scripts/e2e-docker.sh` | Runs the e2e containers and always cleans up (`npm run e2e:docker`, or `npm run measure:docker` for the measurement). |
 
 The build context is the repository root, and `.dockerignore` there keeps `.env`, `node_modules`,
 `.git` and documentation out of every image.
@@ -121,6 +121,22 @@ docker compose -f infra/docker/docker-compose.e2e.yml down -v
 - The first run downloads the Playwright image, which is large (over 1 GB).
 - The HTML report and traces are written to `e2e/playwright-report` and `e2e/test-results`. On
   Linux they may be owned by root.
+
+## Measurement in a container
+
+```bash
+npm run measure:docker
+```
+
+That runs `infra/scripts/e2e-docker.sh measure`: it builds the images, starts the app and its
+throwaway database, and runs `e2e/measure.ts` in the `measure` service (Compose profile `measure`,
+so `npm run e2e:docker` never starts it). The raw samples are written to `e2e/measure-results/`.
+
+- The numbers are container numbers. Chromium, the app and Postgres run inside a Linux VM, so the CPU,
+  RAM and OS in the output describe that VM, not the Mac. Never merge them with a run on the host
+  (`npm run measure`). See `docs/measurements.md`.
+- The image has no `.git`, so the script passes the commit and the Docker host description
+  (`MEASURE_GIT_COMMIT`, `MEASURE_GIT_DIRTY`, `MEASURE_DOCKER_INFO`) to the container.
 
 ## Troubleshooting
 

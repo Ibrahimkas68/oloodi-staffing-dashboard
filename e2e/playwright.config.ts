@@ -1,15 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
-import { E2E_PORT, e2eEnvironment, e2eTarget } from './env.js';
+import { E2E_PORT, START_APP, e2eTarget, serverEnvironment } from './env.js';
 
 const SERVER_START_TIMEOUT_MS = 120_000;
-
-// One command, in order: the database must exist before the server starts, and the web app must be
-// built before the server can serve it.
-const START_APP = [
-  'npx tsx e2e/prepare-db.ts',
-  'npm run build -w @staffing/web',
-  'npm run start -w @staffing/server',
-].join(' && ');
 
 const target = e2eTarget();
 
@@ -38,13 +30,7 @@ export default defineConfig({
           // A server that is already running would be using another database.
           reuseExistingServer: false,
           timeout: SERVER_START_TIMEOUT_MS,
-          env: {
-            ...e2eEnvironment(),
-            PORT: String(E2E_PORT),
-            LOG_LEVEL: 'warn',
-            RATE_LIMIT_PER_MINUTE: '10000',
-            DEMO_MODE: 'false',
-          },
+          env: serverEnvironment(),
         },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
 });

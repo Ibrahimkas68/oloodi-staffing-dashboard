@@ -5,6 +5,7 @@
 # Run from the repository root (infra/scripts/e2e-docker.sh does both steps and always cleans up):
 #   docker compose -f infra/docker/docker-compose.e2e.yml up --build --abort-on-container-exit --exit-code-from e2e
 #   docker compose -f infra/docker/docker-compose.e2e.yml down -v
+# The measurement (profile "measure") is run with: sh infra/scripts/e2e-docker.sh measure
 
 name: staffing-e2e
 
@@ -14,6 +15,12 @@ x-e2e-database: &e2e-database
   APP_DB_PASSWORD: staffing_app_e2e
   DATABASE_URL: postgres://staffing_app:staffing_app_e2e@db-e2e:5432/staffing_e2e
   DATABASE_OWNER_URL: postgres://staffing_owner:staffing_owner_e2e@db-e2e:5432/staffing_e2e
+
+# How the runner finds the app under test. Both variables are required together: they switch the
+# tests and the measurement to "app already running elsewhere" mode.
+x-e2e-target: &e2e-target
+  E2E_BASE_URL: http://app-e2e:3000
+  E2E_DB_HOST: db-e2e
 
 services:
   db-e2e:
@@ -63,12 +70,32 @@ services:
     # Chromium can run out of shared memory in a container; sharing the host IPC namespace avoids it.
     ipc: host
     environment:
-      <<: *e2e-database
+      <<: [*e2e-database, *e2e-target]
       CI: 'true'
-      # Both are required together: they switch the tests to "app already running elsewhere" mode.
-      E2E_BASE_URL: http://app-e2e:3000
-      E2E_DB_HOST: db-e2e
     volumes:
       # Only the reports leave the container.
       - ../../e2e/playwright-report:/repo/e2e/playwright-report
       - ../../e2e/test-results:/repo/e2e/test-results
+
+  # Update delay and recovery measurement (npm run measure:docker). Not part of the default run:
+  # only started with --profile measure. Same image as the e2e service. CI is left unset on purpose.
+  # Numbers from this container are container numbers: never merge them with a run on the host.
+  measure:
+    profiles: ['measure']
+    image: staffing-e2e:local
+    depends_on:
+      app-e2e:
+        condition: service_healthy
+    init: true
+    ipc: host
+    working_dir: /repo/e2e
+    command: ['npx', 'tsx', 'measure.ts']
+    environment:
+      <<: [*e2e-database, *e2e-target]
+      # The image has no .git, so the wrapper script passes these in (see e2e-docker.sh).
+      MEASURE_GIT_COMMIT: ${MEASURE_GIT_COMMIT:-}
+      MEASURE_GIT_DIRTY: ${MEASURE_GIT_DIRTY:-}
+      MEASURE_DOCKER_INFO: ${MEASURE_DOCKER_INFO:-}
+    volumes:
+      # Only the raw samples leave the container.
+      - ../../e2e/measure-results:/repo/e2e/measure-results
